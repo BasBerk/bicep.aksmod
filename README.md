@@ -1,0 +1,2 @@
+# bicep.aksmod
+DemoModule
