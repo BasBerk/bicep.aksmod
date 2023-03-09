@@ -1,0 +1,52 @@
+{
+  "moduleAliases": {
+    "br": {
+      "BicepFeatures": {
+        "registry": "insparktemplates.azurecr.io",
+        "modulePath": "azure/features"
+      },
+      "BicepSolutions": {
+        "registry": "insparktemplates.azurecr.io",
+        "modulePath": "azure/solutions"
+      }
+    }
+  },
+  "analyzers": {
+    "core": {
+      "enabled": true,
+      "verbose": false,
+      "rules": {
+        "adminusername-should-not-be-literal": {
+          "level": "warning"
+        },
+        "no-hardcoded-location": {
+          "level": "error"
+        },
+        "no-unnecessary-dependson": {
+          "level": "info"
+        },
+        "no-unused-params": {
+          "level": "info"
+        },
+        "no-unused-vars": {
+          "level": "info"
+        },
+        "outputs-should-not-contain-secrets": {
+          "level": "error"
+        },
+        "prefer-interpolation": {
+          "level": "warning"
+        },
+        "secure-parameter-default": {
+          "level": "error"
+        },
+        "simplify-interpolation": {
+          "level": "info"
+        },
+        "use-stable-vm-image": {
+          "level": "warning"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+    "commonTags": {
+        "InSpark_EnvironmentType": "PROD",
+        "InSpark_BusinessApplication": "AKS",
+        "InSpark_InfrastructureManagedBy": "InSpark",
+        "InSpark_ApplicationManagedBy": "MC",
+        "InSpark_PipelineManagedBy": "MC",
+        "InSpark_MonitoredBy": "InSpark"
+    }
+}
