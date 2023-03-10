@@ -1,6 +1,6 @@
 targetScope = 'resourceGroup'
 
-param location string = 'westeurope'
+param location string = 'northeurope'
 
 module kv 'modules/keyvault.bicep' = {
   scope: resourceGroup('rg-infr-aks-p-weu-00')
