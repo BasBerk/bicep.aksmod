@@ -1,0 +1,3206 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.15.31.15270",
+      "templateHash": "10695258049042652115"
+    }
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "northeurope"
+    },
+    "roleDefinitionID": {
+      "type": "string",
+      "defaultValue": "8e3af657-a8ff-443c-a75c-2fe8c4bcb635",
+      "metadata": {
+        "description": "Specifies the role definition ID used in the role assignment."
+      }
+    },
+    "principalIdBas": {
+      "type": "string",
+      "defaultValue": "645ad4db-be41-4471-9f34-ae48367f80a6",
+      "metadata": {
+        "description": "Specifies the principal ID assigned to the role."
+      }
+    },
+    "principalIdstijn": {
+      "type": "string",
+      "defaultValue": "7e99074c-62cf-474e-948d-9c264a5eb354"
+    }
+  },
+  "variables": {
+    "subnets": [
+      {
+        "name": "AzureAKSsubnet",
+        "ipAddressRange": "10.224.0.0/22",
+        "routeTable": "",
+        "networkSecurityGroup": false,
+        "serviceEndpoints": []
+      },
+      {
+        "name": "privateendpoints",
+        "ipAddressRange": "10.224.10.0/24",
+        "routeTable": "",
+        "networkSecurityGroup": false,
+        "serviceEndpoints": []
+      }
+    ]
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(parameters('principalIdBas'), parameters('roleDefinitionID'), resourceGroup().id)]",
+      "properties": {
+        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', parameters('roleDefinitionID'))]",
+        "principalId": "[parameters('principalIdBas')]"
+      }
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(parameters('principalIdstijn'), parameters('roleDefinitionID'), resourceGroup().id)]",
+      "properties": {
+        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', parameters('roleDefinitionID'))]",
+        "principalId": "[parameters('principalIdstijn')]"
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "Deploy-kv-aks",
+      "resourceGroup": "rg-infr-aks-p-weu-00",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "resourceName": {
+            "value": "kv-infr-aks-p-weu-00"
+          },
+          "workSpaceId": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'rg-infr-aks-p-weu-00'), 'Microsoft.Resources/deployments', 'Deploy-vnet-law'), '2020-10-01').outputs.lawID.value]"
+          },
+          "vnetName": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'rg-infr-aks-p-weu-00'), 'Microsoft.Resources/deployments', 'Deploy-vnet-aks'), '2020-10-01').outputs.vnetName.value]"
+          },
+          "subnetName": {
+            "value": "privateendpoints"
+          },
+          "privateEndpointName": {
+            "value": "pe-kv-infr-aks-p-weu-00"
+          },
+          "vnetId": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'rg-infr-aks-p-weu-00'), 'Microsoft.Resources/deployments', 'Deploy-vnet-aks'), '2020-10-01').outputs.vnetid.value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.15.31.15270",
+              "templateHash": "2232948690530016762"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "The Azure region to deploy the resource"
+              }
+            },
+            "workSpaceId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "The workspace ID for the diagnostic settings."
+              }
+            },
+            "additionTags": {
+              "type": "object",
+              "defaultValue": {}
+            },
+            "resourceName": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the resource \"Key Vault\""
+              }
+            },
+            "vnetName": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "the vnet used for the private endpoint"
+              }
+            },
+            "vnetId": {
+              "type": "string",
+              "defaultValue": ""
+            },
+            "subnetName": {
+              "type": "string",
+              "defaultValue": ""
+            },
+            "privateEndpointName": {
+              "type": "string",
+              "defaultValue": ""
+            }
+          },
+          "variables": {
+            "$fxv#0": {
+              "commonTags": {
+                "InSpark_EnvironmentType": "PROD",
+                "InSpark_BusinessApplication": "AKS",
+                "InSpark_InfrastructureManagedBy": "InSpark",
+                "InSpark_ApplicationManagedBy": "InSpark",
+                "InSpark_PipelineManagedBy": "InSpark"
+              }
+            },
+            "commonTags": "[variables('$fxv#0')]",
+            "tags": "[union(variables('commonTags').commonTags, parameters('additionTags'))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/privateEndpoints",
+              "apiVersion": "2021-05-01",
+              "name": "[parameters('privateEndpointName')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "subnet": {
+                  "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('subnetName'))]"
+                },
+                "privateLinkServiceConnections": [
+                  {
+                    "name": "[parameters('privateEndpointName')]",
+                    "properties": {
+                      "privateLinkServiceId": "[reference(resourceId('Microsoft.Resources/deployments', 'KeyVault'), '2020-10-01').outputs.resourceID.value]",
+                      "groupIds": [
+                        "vault"
+                      ]
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', 'KeyVault')]"
+              ]
+            },
+            {
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2020-10-01",
+              "name": "KeyVault",
+              "properties": {
+                "expressionEvaluationOptions": {
+                  "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                  "accessPolicies": {
+                    "value": []
+                  },
+                  "applicationName": {
+                    "value": ""
+                  },
+                  "environmentName": {
+                    "value": ""
+                  },
+                  "regionName": {
+                    "value": ""
+                  },
+                  "workloadName": {
+                    "value": ""
+                  },
+                  "customName": {
+                    "value": "[parameters('resourceName')]"
+                  },
+                  "defaultAction": {
+                    "value": "Deny"
+                  },
+                  "diagnosticsSettings": "[if(empty(parameters('workSpaceId')), createObject('value', createArray()), createObject('value', createArray(createObject('name', 'Diag2Law', 'workspaceId', parameters('workSpaceId'), 'logs', createArray(createObject('categoryGroup', 'allLogs', 'enabled', true())), 'metrics', createArray(createObject('category', 'AllMetrics', 'enabled', true()))))))]",
+                  "location": {
+                    "value": "[parameters('location')]"
+                  },
+                  "tags": {
+                    "value": "[variables('tags')]"
+                  }
+                },
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "metadata": {
+                    "_generator": {
+                      "name": "bicep",
+                      "version": "0.8.9.13224",
+                      "templateHash": "5235759439630239445"
+                    }
+                  },
+                  "parameters": {
+                    "workloadName": {
+                      "type": "string",
+                      "maxLength": 5,
+                      "metadata": {
+                        "description": "Required. The name of the workload this resource will be used for"
+                      }
+                    },
+                    "applicationName": {
+                      "type": "string",
+                      "maxLength": 5,
+                      "metadata": {
+                        "description": "Required. The name of the application"
+                      }
+                    },
+                    "environmentName": {
+                      "type": "string",
+                      "maxLength": 1,
+                      "metadata": {
+                        "description": "Required. The code of the environment this resource will be used in"
+                      }
+                    },
+                    "regionName": {
+                      "type": "string",
+                      "maxLength": 4,
+                      "metadata": {
+                        "description": "Required. Region of the resource"
+                      }
+                    },
+                    "customName": {
+                      "type": "string",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "Optional. The name to use if not using the normal naming convention"
+                      }
+                    },
+                    "tags": {
+                      "type": "object",
+                      "defaultValue": {},
+                      "metadata": {
+                        "description": "Optional. Resource tags"
+                      }
+                    },
+                    "skuName": {
+                      "type": "string",
+                      "defaultValue": "standard",
+                      "allowedValues": [
+                        "standard",
+                        "premium"
+                      ],
+                      "metadata": {
+                        "description": "Optional. SKU name to specify whether the key vault is a standard vault or a premium vault"
+                      }
+                    },
+                    "enableVaultForDeployment": {
+                      "type": "bool",
+                      "defaultValue": true,
+                      "metadata": {
+                        "description": "Optional. Property to specify whether Azure Virtual Machines are permitted to retrieve certificates stored as secrets from the key vault"
+                      }
+                    },
+                    "enableVaultForDiskEncryption": {
+                      "type": "bool",
+                      "defaultValue": true,
+                      "metadata": {
+                        "description": "Optional. Property to specify whether Azure Disk Encryption is permitted to retrieve secrets from the vault and unwrap keys"
+                      }
+                    },
+                    "enableVaultForTemplateDeployment": {
+                      "type": "bool",
+                      "defaultValue": true,
+                      "metadata": {
+                        "description": "Optional. Property to specify whether Azure Resource Manager is permitted to retrieve secrets from the key vault"
+                      }
+                    },
+                    "enableSoftDelete": {
+                      "type": "bool",
+                      "defaultValue": true,
+                      "metadata": {
+                        "description": "Optional. Property to specify whether the 'soft delete' functionality is enabled for this key vault. Once set to true, it cannot be reverted to false"
+                      }
+                    },
+                    "enablePurgeProtection": {
+                      "type": "bool",
+                      "defaultValue": true,
+                      "metadata": {
+                        "description": "Optional. Property specifying whether protection against purge is enabled for this vault. Setting this property to true activates protection against purge for this vault and its content - only the Key Vault service may initiate a hard, irrecoverable deletion. The setting is effective only if soft delete is also enabled. Enabling this functionality is irreversible - that is, the property does not accept false as its value"
+                      }
+                    },
+                    "azDevOpsServicePrincipal": {
+                      "type": "string",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "Optional. Specifies the DevOps service principal to grant permissions on the KeyVault"
+                      }
+                    },
+                    "azBackupServicePrincipal": {
+                      "type": "string",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "Optional. Specifies the Backup service principal to grant permissions on the KeyVault"
+                      }
+                    },
+                    "existingAccessPolicies": {
+                      "type": "object",
+                      "defaultValue": {},
+                      "metadata": {
+                        "description": "Optional. Parameter used by task group to pass the existing access policies"
+                      }
+                    },
+                    "accessPolicies": {
+                      "type": "array",
+                      "metadata": {
+                        "description": "Required. Array of objects that define the access policies within the KeyVault"
+                      }
+                    },
+                    "publicNetworkAccess": {
+                      "type": "string",
+                      "defaultValue": "disabled",
+                      "metadata": {
+                        "description": "Optional. Property to specify whether the vault will accept traffic from public internet. If set to 'disabled' all traffic except private endpoint traffic and that that originates from trusted services will be blocked. This will override the set firewall rules, meaning that even if the firewall rules are present we will not honor the rules"
+                      }
+                    },
+                    "bypass": {
+                      "type": "string",
+                      "defaultValue": "AzureServices",
+                      "metadata": {
+                        "description": "Optional. Specifies whether traffic is bypassed for Logging/Metrics/AzureServices. Possible values are any combination of Logging,Metrics,AzureServices (For example, \"Logging, Metrics\"), or None to bypass none of those traffics"
+                      }
+                    },
+                    "defaultAction": {
+                      "type": "string",
+                      "defaultValue": "Allow",
+                      "allowedValues": [
+                        "Allow",
+                        "Deny"
+                      ],
+                      "metadata": {
+                        "description": "Optional. Specifies the default action of allow or deny when no other rules match"
+                      }
+                    },
+                    "ipRules": {
+                      "type": "array",
+                      "defaultValue": [],
+                      "metadata": {
+                        "description": "Optional. Sets the IP ACL rules"
+                      }
+                    },
+                    "virtualNetworkRules": {
+                      "type": "array",
+                      "defaultValue": [],
+                      "metadata": {
+                        "description": "Optional. Sets the virtual network rules."
+                      }
+                    },
+                    "diagnosticsSettings": {
+                      "type": "array",
+                      "defaultValue": [],
+                      "metadata": {
+                        "description": "Optional. Diagnostic settings for the KeyVault"
+                      }
+                    },
+                    "location": {
+                      "type": "string",
+                      "defaultValue": "[resourceGroup().location]",
+                      "metadata": {
+                        "description": "Optional. Location of the resource"
+                      }
+                    },
+                    "permissions": {
+                      "type": "array",
+                      "defaultValue": [],
+                      "metadata": {
+                        "description": "Optional. Array of Role Assignments to deploy"
+                      }
+                    }
+                  },
+                  "variables": {
+                    "nameVar": "[toLower(format('kv{0}{1}{2}{3}', parameters('workloadName'), parameters('applicationName'), parameters('environmentName'), parameters('regionName')))]",
+                    "uniqueNameVar": "[format('{0}{1}', variables('nameVar'), substring(uniqueString(resourceGroup().id, variables('nameVar')), 7))]",
+                    "devOpsAccessPolicy": [
+                      {
+                        "objectId": "[parameters('azDevOpsServicePrincipal')]",
+                        "permissions": {
+                          "keys": [],
+                          "secrets": [
+                            "List",
+                            "Get",
+                            "Set"
+                          ],
+                          "certificates": []
+                        }
+                      }
+                    ],
+                    "backupAccessPolicy": [
+                      {
+                        "objectId": "[parameters('azBackupServicePrincipal')]",
+                        "permissions": {
+                          "keys": [
+                            "List",
+                            "Get",
+                            "Backup"
+                          ],
+                          "secrets": [
+                            "List",
+                            "Get",
+                            "Backup"
+                          ],
+                          "certificates": []
+                        }
+                      }
+                    ],
+                    "accessPolicies_var": "[union(if(contains(parameters('existingAccessPolicies'), 'list'), parameters('existingAccessPolicies').list, createArray()), parameters('accessPolicies'), if(empty(parameters('azDevOpsServicePrincipal')), createArray(), variables('devOpsAccessPolicy')), if(empty(parameters('azBackupServicePrincipal')), createArray(), variables('backupAccessPolicy')))]"
+                  },
+                  "resources": [
+                    {
+                      "type": "Microsoft.KeyVault/vaults",
+                      "apiVersion": "2022-07-01",
+                      "name": "[if(empty(parameters('customName')), variables('uniqueNameVar'), parameters('customName'))]",
+                      "location": "[parameters('location')]",
+                      "tags": "[parameters('tags')]",
+                      "properties": {
+                        "copy": [
+                          {
+                            "name": "accessPolicies",
+                            "count": "[length(variables('accessPolicies_var'))]",
+                            "input": {
+                              "tenantId": "[if(contains(variables('accessPolicies_var')[copyIndex('accessPolicies')], 'tenantId'), variables('accessPolicies_var')[copyIndex('accessPolicies')].tenantId, subscription().tenantId)]",
+                              "objectId": "[variables('accessPolicies_var')[copyIndex('accessPolicies')].objectId]",
+                              "permissions": {
+                                "keys": "[variables('accessPolicies_var')[copyIndex('accessPolicies')].permissions.keys]",
+                                "secrets": "[variables('accessPolicies_var')[copyIndex('accessPolicies')].permissions.secrets]",
+                                "certificates": "[variables('accessPolicies_var')[copyIndex('accessPolicies')].permissions.certificates]"
+                              }
+                            }
+                          }
+                        ],
+                        "enabledForDeployment": "[parameters('enableVaultForDeployment')]",
+                        "enabledForDiskEncryption": "[parameters('enableVaultForDiskEncryption')]",
+                        "enabledForTemplateDeployment": "[parameters('enableVaultForTemplateDeployment')]",
+                        "enableSoftDelete": "[parameters('enableSoftDelete')]",
+                        "enablePurgeProtection": "[if(equals(parameters('enablePurgeProtection'), true()), parameters('enablePurgeProtection'), null())]",
+                        "tenantId": "[subscription().tenantId]",
+                        "publicNetworkAccess": "[parameters('publicNetworkAccess')]",
+                        "networkAcls": {
+                          "bypass": "[parameters('bypass')]",
+                          "defaultAction": "[parameters('defaultAction')]",
+                          "ipRules": "[parameters('ipRules')]",
+                          "virtualNetworkRules": "[parameters('virtualNetworkRules')]"
+                        },
+                        "sku": {
+                          "family": "A",
+                          "name": "[parameters('skuName')]"
+                        }
+                      }
+                    },
+                    {
+                      "condition": "[not(empty(parameters('diagnosticsSettings')))]",
+                      "copy": {
+                        "name": "diagnosticSettings",
+                        "count": "[length(parameters('diagnosticsSettings'))]"
+                      },
+                      "type": "Microsoft.Insights/diagnosticSettings",
+                      "apiVersion": "2021-05-01-preview",
+                      "scope": "[format('Microsoft.KeyVault/vaults/{0}', if(empty(parameters('customName')), variables('uniqueNameVar'), parameters('customName')))]",
+                      "name": "[parameters('diagnosticsSettings')[copyIndex()].name]",
+                      "properties": {
+                        "workspaceId": "[if(and(contains(parameters('diagnosticsSettings')[copyIndex()], 'workspaceId'), not(equals(parameters('diagnosticsSettings')[copyIndex()].workspaceId, ''))), parameters('diagnosticsSettings')[copyIndex()].workspaceId, null())]",
+                        "storageAccountId": "[if(and(contains(parameters('diagnosticsSettings')[copyIndex()], 'diagnosticsStorageAccountId'), not(equals(parameters('diagnosticsSettings')[copyIndex()].diagnosticsStorageAccountId, ''))), parameters('diagnosticsSettings')[copyIndex()].diagnosticsStorageAccountId, null())]",
+                        "logs": "[if(contains(parameters('diagnosticsSettings')[copyIndex()], 'logs'), parameters('diagnosticsSettings')[copyIndex()].logs, null())]",
+                        "metrics": "[if(contains(parameters('diagnosticsSettings')[copyIndex()], 'metrics'), parameters('diagnosticsSettings')[copyIndex()].metrics, null())]"
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.KeyVault/vaults', if(empty(parameters('customName')), variables('uniqueNameVar'), parameters('customName')))]"
+                      ]
+                    },
+                    {
+                      "copy": {
+                        "name": "roleAssignments",
+                        "count": "[length(parameters('permissions'))]"
+                      },
+                      "type": "Microsoft.Authorization/roleAssignments",
+                      "apiVersion": "2022-01-01-preview",
+                      "scope": "[format('Microsoft.KeyVault/vaults/{0}', if(empty(parameters('customName')), variables('uniqueNameVar'), parameters('customName')))]",
+                      "name": "[guid(resourceGroup().id, parameters('permissions')[copyIndex()].name, parameters('permissions')[copyIndex()].roleDefinitionId)]",
+                      "properties": {
+                        "principalId": "[parameters('permissions')[copyIndex()].principalId]",
+                        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', parameters('permissions')[copyIndex()].roleDefinitionId)]",
+                        "condition": "[if(and(contains(parameters('permissions')[copyIndex()], 'condition'), not(equals(parameters('permissions')[copyIndex()].condition, ''))), parameters('permissions')[copyIndex()].condition, null())]",
+                        "conditionVersion": "[if(and(contains(parameters('permissions')[copyIndex()], 'conditionVersion'), not(equals(parameters('permissions')[copyIndex()].conditionVersion, ''))), parameters('permissions')[copyIndex()].conditionVersion, null())]",
+                        "delegatedManagedIdentityResourceId": "[if(and(contains(parameters('permissions')[copyIndex()], 'delegatedManagedIdentityResourceId'), not(equals(parameters('permissions')[copyIndex()].delegatedManagedIdentityResourceId, ''))), parameters('permissions')[copyIndex()].delegatedManagedIdentityResourceId, null())]",
+                        "description": "[parameters('permissions')[copyIndex()].description]",
+                        "principalType": "[parameters('permissions')[copyIndex()].principalType]"
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.KeyVault/vaults', if(empty(parameters('customName')), variables('uniqueNameVar'), parameters('customName')))]"
+                      ]
+                    }
+                  ],
+                  "outputs": {
+                    "resourceName": {
+                      "type": "string",
+                      "value": "[if(empty(parameters('customName')), variables('uniqueNameVar'), parameters('customName'))]",
+                      "metadata": {
+                        "description": "The name of the Azure resource"
+                      }
+                    },
+                    "resourceID": {
+                      "type": "string",
+                      "value": "[resourceId('Microsoft.KeyVault/vaults', if(empty(parameters('customName')), variables('uniqueNameVar'), parameters('customName')))]",
+                      "metadata": {
+                        "description": "The resource-id of the Azure resource"
+                      }
+                    },
+                    "resourceUri": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.KeyVault/vaults', if(empty(parameters('customName')), variables('uniqueNameVar'), parameters('customName')))).vaultUri]",
+                      "metadata": {
+                        "description": "The URI of the Azure resource"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "saId": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'KeyVault'), '2020-10-01').outputs.resourceID.value]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'rg-infr-aks-p-weu-00'), 'Microsoft.Resources/deployments', 'Deploy-vnet-law')]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'rg-infr-aks-p-weu-00'), 'Microsoft.Resources/deployments', 'Deploy-vnet-aks')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "Deploy-vnet-aks",
+      "resourceGroup": "rg-infr-aks-p-weu-00",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "subnets": {
+            "value": "[variables('subnets')]"
+          },
+          "virtualNetworkAddressPrefix": {
+            "value": [
+              "10.224.0.0/16"
+            ]
+          },
+          "vnetName": {
+            "value": "vnet-infr-aks-p-weu-00"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.15.31.15270",
+              "templateHash": "7052818706086296526"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "The Azure region to deploy the resourece"
+              }
+            },
+            "workSpaceId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "The workspace ID for the diagnostic settings."
+              }
+            },
+            "additionTags": {
+              "type": "object",
+              "defaultValue": {}
+            },
+            "vnetName": {
+              "type": "string",
+              "metadata": {
+                "description": "Nane of the vnet"
+              }
+            },
+            "subnets": {
+              "type": "array",
+              "metadata": {
+                "description": "The name and IP address range for each subnet in the virtual networks."
+              }
+            },
+            "virtualNetworkAddressPrefix": {
+              "type": "array",
+              "metadata": {
+                "description": "The IP address range for all virtual networks to use."
+              }
+            }
+          },
+          "variables": {
+            "copy": [
+              {
+                "name": "subnetProperties",
+                "count": "[length(parameters('subnets'))]",
+                "input": {
+                  "name": "[parameters('subnets')[copyIndex('subnetProperties')].name]",
+                  "properties": {
+                    "addressPrefix": "[parameters('subnets')[copyIndex('subnetProperties')].ipAddressRange]"
+                  }
+                }
+              }
+            ],
+            "$fxv#0": {
+              "commonTags": {
+                "InSpark_EnvironmentType": "PROD",
+                "InSpark_BusinessApplication": "AKS",
+                "InSpark_InfrastructureManagedBy": "InSpark",
+                "InSpark_ApplicationManagedBy": "InSpark",
+                "InSpark_PipelineManagedBy": "InSpark"
+              }
+            },
+            "commonTags": "[variables('$fxv#0')]",
+            "tags": "[union(variables('commonTags').commonTags, parameters('additionTags'))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2020-10-01",
+              "name": "[parameters('vnetName')]",
+              "properties": {
+                "expressionEvaluationOptions": {
+                  "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                  "applicationName": {
+                    "value": ""
+                  },
+                  "environmentName": {
+                    "value": ""
+                  },
+                  "index": {
+                    "value": 0
+                  },
+                  "regionName": {
+                    "value": ""
+                  },
+                  "vNetPrefix": {
+                    "value": "[parameters('virtualNetworkAddressPrefix')]"
+                  },
+                  "workloadName": {
+                    "value": ""
+                  },
+                  "customName": {
+                    "value": "[parameters('vnetName')]"
+                  },
+                  "location": {
+                    "value": "[parameters('location')]"
+                  },
+                  "subnets": {
+                    "value": "[variables('subnetProperties')]"
+                  },
+                  "vNetDnsServers": {
+                    "value": []
+                  },
+                  "diagnosticSettings": "[if(empty(parameters('workSpaceId')), createObject('value', createArray()), createObject('value', createArray(createObject('name', 'Diag2Law', 'workspaceId', parameters('workSpaceId'), 'logs', createArray(createObject('categoryGroup', 'allLogs', 'enabled', true())), 'metrics', createArray(createObject('category', 'AllMetrics', 'enabled', true()))))))]",
+                  "tags": {
+                    "value": "[variables('tags')]"
+                  }
+                },
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "metadata": {
+                    "_generator": {
+                      "name": "bicep",
+                      "version": "0.8.2.30886",
+                      "templateHash": "18152569340696989905"
+                    }
+                  },
+                  "parameters": {
+                    "applicationName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Required. The application name of the resource."
+                      }
+                    },
+                    "environmentName": {
+                      "type": "string",
+                      "maxLength": 1,
+                      "metadata": {
+                        "description": "Required. The environment letter of the resource."
+                      }
+                    },
+                    "workloadName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Required. The workload name of the resource."
+                      }
+                    },
+                    "regionName": {
+                      "type": "string",
+                      "maxLength": 4,
+                      "metadata": {
+                        "description": "Required. The region of the resource."
+                      }
+                    },
+                    "index": {
+                      "type": "int",
+                      "metadata": {
+                        "description": "Required. The index of the resource."
+                      }
+                    },
+                    "customName": {
+                      "type": "string",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "Optional. Custom name of the resource."
+                      }
+                    },
+                    "tags": {
+                      "type": "object",
+                      "defaultValue": {},
+                      "metadata": {
+                        "description": "Optional. Object containing the tags to apply to all resources."
+                      }
+                    },
+                    "vNetPrefix": {
+                      "type": "array",
+                      "metadata": {
+                        "description": "Required. The address space that contains an array of IP address ranges that can be used by subnets."
+                      }
+                    },
+                    "vNetDnsServers": {
+                      "type": "array",
+                      "defaultValue": [],
+                      "metadata": {
+                        "description": "Optional. Array of DNS Servers to be used by the vNet. When none are specified, Azure DNS is used."
+                      }
+                    },
+                    "subnets": {
+                      "type": "array",
+                      "defaultValue": [],
+                      "metadata": {
+                        "description": "Optional. Array of subnets."
+                      }
+                    },
+                    "location": {
+                      "type": "string",
+                      "defaultValue": "[resourceGroup().location]",
+                      "metadata": {
+                        "description": "Optional. Location of the resource"
+                      }
+                    },
+                    "permissions": {
+                      "type": "array",
+                      "defaultValue": [],
+                      "metadata": {
+                        "description": "Optional. Array of Role Assignments to deploy"
+                      }
+                    },
+                    "diagnosticSettings": {
+                      "type": "array",
+                      "defaultValue": [],
+                      "metadata": {
+                        "description": "Optional. Diagnostic settings configuration"
+                      }
+                    }
+                  },
+                  "resources": [
+                    {
+                      "type": "Microsoft.Network/virtualNetworks",
+                      "apiVersion": "2021-08-01",
+                      "name": "[if(empty(parameters('customName')), toLower(format('vnet-{0}-{1}-{2}-{3}-{4}', parameters('workloadName'), parameters('applicationName'), parameters('environmentName'), parameters('regionName'), padLeft(parameters('index'), 2, '0'))), parameters('customName'))]",
+                      "location": "[parameters('location')]",
+                      "tags": "[parameters('tags')]",
+                      "properties": {
+                        "addressSpace": {
+                          "addressPrefixes": "[parameters('vNetPrefix')]"
+                        },
+                        "dhcpOptions": {
+                          "dnsServers": "[parameters('vNetDnsServers')]"
+                        },
+                        "subnets": "[parameters('subnets')]"
+                      }
+                    },
+                    {
+                      "condition": "[not(empty(parameters('diagnosticSettings')))]",
+                      "copy": {
+                        "name": "diagSettings",
+                        "count": "[length(parameters('diagnosticSettings'))]"
+                      },
+                      "type": "Microsoft.Insights/diagnosticSettings",
+                      "apiVersion": "2021-05-01-preview",
+                      "scope": "[format('Microsoft.Network/virtualNetworks/{0}', if(empty(parameters('customName')), toLower(format('vnet-{0}-{1}-{2}-{3}-{4}', parameters('workloadName'), parameters('applicationName'), parameters('environmentName'), parameters('regionName'), padLeft(parameters('index'), 2, '0'))), parameters('customName')))]",
+                      "name": "[if(empty(parameters('diagnosticSettings')), 'outOfBoundsError', parameters('diagnosticSettings')[copyIndex()].name)]",
+                      "properties": {
+                        "workspaceId": "[if(contains(parameters('diagnosticSettings')[copyIndex()], 'workspaceId'), parameters('diagnosticSettings')[copyIndex()].workspaceId, null())]",
+                        "storageAccountId": "[if(contains(parameters('diagnosticSettings')[copyIndex()], 'diagnosticsStorageAccountId'), parameters('diagnosticSettings')[copyIndex()].diagnosticsStorageAccountId, null())]",
+                        "logs": "[if(contains(parameters('diagnosticSettings')[copyIndex()], 'logs'), parameters('diagnosticSettings')[copyIndex()].logs, null())]",
+                        "metrics": "[if(contains(parameters('diagnosticSettings')[copyIndex()], 'metrics'), parameters('diagnosticSettings')[copyIndex()].metrics, null())]"
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.Network/virtualNetworks', if(empty(parameters('customName')), toLower(format('vnet-{0}-{1}-{2}-{3}-{4}', parameters('workloadName'), parameters('applicationName'), parameters('environmentName'), parameters('regionName'), padLeft(parameters('index'), 2, '0'))), parameters('customName')))]"
+                      ]
+                    },
+                    {
+                      "copy": {
+                        "name": "roleAssignments",
+                        "count": "[length(parameters('permissions'))]"
+                      },
+                      "type": "Microsoft.Authorization/roleAssignments",
+                      "apiVersion": "2022-01-01-preview",
+                      "scope": "[format('Microsoft.Network/virtualNetworks/{0}', if(empty(parameters('customName')), toLower(format('vnet-{0}-{1}-{2}-{3}-{4}', parameters('workloadName'), parameters('applicationName'), parameters('environmentName'), parameters('regionName'), padLeft(parameters('index'), 2, '0'))), parameters('customName')))]",
+                      "name": "[guid(resourceGroup().id, parameters('permissions')[copyIndex()].name, parameters('permissions')[copyIndex()].roleDefinitionId)]",
+                      "properties": {
+                        "principalId": "[parameters('permissions')[copyIndex()].principalId]",
+                        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', parameters('permissions')[copyIndex()].roleDefinitionId)]",
+                        "condition": "[if(and(contains(parameters('permissions')[copyIndex()], 'condition'), not(equals(parameters('permissions')[copyIndex()].condition, ''))), parameters('permissions')[copyIndex()].condition, null())]",
+                        "conditionVersion": "[if(and(contains(parameters('permissions')[copyIndex()], 'conditionVersion'), not(equals(parameters('permissions')[copyIndex()].conditionVersion, ''))), parameters('permissions')[copyIndex()].conditionVersion, null())]",
+                        "delegatedManagedIdentityResourceId": "[if(and(contains(parameters('permissions')[copyIndex()], 'delegatedManagedIdentityResourceId'), not(equals(parameters('permissions')[copyIndex()].delegatedManagedIdentityResourceId, ''))), parameters('permissions')[copyIndex()].delegatedManagedIdentityResourceId, null())]",
+                        "description": "[parameters('permissions')[copyIndex()].description]",
+                        "principalType": "[parameters('permissions')[copyIndex()].principalType]"
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.Network/virtualNetworks', if(empty(parameters('customName')), toLower(format('vnet-{0}-{1}-{2}-{3}-{4}', parameters('workloadName'), parameters('applicationName'), parameters('environmentName'), parameters('regionName'), padLeft(parameters('index'), 2, '0'))), parameters('customName')))]"
+                      ]
+                    }
+                  ],
+                  "outputs": {
+                    "resourceName": {
+                      "type": "string",
+                      "value": "[if(empty(parameters('customName')), toLower(format('vnet-{0}-{1}-{2}-{3}-{4}', parameters('workloadName'), parameters('applicationName'), parameters('environmentName'), parameters('regionName'), padLeft(parameters('index'), 2, '0'))), parameters('customName'))]",
+                      "metadata": {
+                        "description": "The name of the Azure resource"
+                      }
+                    },
+                    "resourceID": {
+                      "type": "string",
+                      "value": "[resourceId('Microsoft.Network/virtualNetworks', if(empty(parameters('customName')), toLower(format('vnet-{0}-{1}-{2}-{3}-{4}', parameters('workloadName'), parameters('applicationName'), parameters('environmentName'), parameters('regionName'), padLeft(parameters('index'), 2, '0'))), parameters('customName')))]",
+                      "metadata": {
+                        "description": "The resource-id of the Azure resource"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "vnetid": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', parameters('vnetName')), '2020-10-01').outputs.resourceID.value]"
+            },
+            "vnetName": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', parameters('vnetName')), '2020-10-01').outputs.resourceName.value]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "Deploy-vnet-law",
+      "resourceGroup": "rg-infr-aks-p-weu-00",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "lawName": {
+            "value": "law-infr-aks-p-weu-00"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.15.31.15270",
+              "templateHash": "543816563511408610"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "The Azure region to deploy the resourece"
+              }
+            },
+            "lawName": {
+              "type": "string",
+              "metadata": {
+                "description": "The name for the log analytics workspace"
+              }
+            },
+            "additionTags": {
+              "type": "object",
+              "defaultValue": {}
+            }
+          },
+          "variables": {
+            "$fxv#0": {
+              "commonTags": {
+                "InSpark_EnvironmentType": "PROD",
+                "InSpark_BusinessApplication": "AKS",
+                "InSpark_InfrastructureManagedBy": "InSpark",
+                "InSpark_ApplicationManagedBy": "InSpark",
+                "InSpark_PipelineManagedBy": "InSpark"
+              }
+            },
+            "commonTags": "[variables('$fxv#0')]",
+            "tags": "[union(variables('commonTags').commonTags, parameters('additionTags'))]",
+            "solutionTypes": [
+              "AgentHealthAssessment",
+              "AzureActivity",
+              "KeyVaultAnalytics",
+              "AzureSQLAnalytics",
+              "ChangeTracking",
+              "DnsAnalytics",
+              "NetworkMonitoring",
+              "Security",
+              "ServiceMap",
+              "SQLVulnerabilityAssessment",
+              "SQLAdvancedThreatProtection",
+              "Updates",
+              "VMInsights",
+              "ContainerInsights"
+            ]
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2020-10-01",
+              "name": "[parameters('lawName')]",
+              "properties": {
+                "expressionEvaluationOptions": {
+                  "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                  "customName": {
+                    "value": "[parameters('lawName')]"
+                  },
+                  "applicationName": {
+                    "value": ""
+                  },
+                  "environmentName": {
+                    "value": ""
+                  },
+                  "index": {
+                    "value": 0
+                  },
+                  "regionName": {
+                    "value": ""
+                  },
+                  "solutionTypes": {
+                    "value": "[variables('solutionTypes')]"
+                  },
+                  "workloadName": {
+                    "value": ""
+                  },
+                  "tags": {
+                    "value": "[variables('tags')]"
+                  },
+                  "location": {
+                    "value": "[parameters('location')]"
+                  },
+                  "serviceTier": {
+                    "value": "PerGB2018"
+                  },
+                  "subscriptions": {
+                    "value": []
+                  }
+                },
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "metadata": {
+                    "_generator": {
+                      "name": "bicep",
+                      "version": "0.8.2.30886",
+                      "templateHash": "18136670719430708298"
+                    }
+                  },
+                  "parameters": {
+                    "applicationName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Required. The name of the application"
+                      }
+                    },
+                    "environmentName": {
+                      "type": "string",
+                      "maxLength": 1,
+                      "metadata": {
+                        "description": "Required. The code of the environment this resource will be used in"
+                      }
+                    },
+                    "workloadName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Required. The name of the workload this resource will be used for"
+                      }
+                    },
+                    "regionName": {
+                      "type": "string",
+                      "maxLength": 4,
+                      "metadata": {
+                        "description": "Required. The region this resource will be deployed in"
+                      }
+                    },
+                    "index": {
+                      "type": "int",
+                      "metadata": {
+                        "description": "Required. Index of the resource"
+                      }
+                    },
+                    "customName": {
+                      "type": "string",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "Optional. The name to use if not using the normal naming convention"
+                      }
+                    },
+                    "tags": {
+                      "type": "object",
+                      "defaultValue": {},
+                      "metadata": {
+                        "description": "Optional. Resource tags"
+                      }
+                    },
+                    "serviceTier": {
+                      "type": "string",
+                      "defaultValue": "PerGB2018",
+                      "allowedValues": [
+                        "CapacityReservation",
+                        "Free",
+                        "LACluster",
+                        "PerGB2018",
+                        "PerNode",
+                        "Premium",
+                        "Standalone",
+                        "Standard"
+                      ],
+                      "metadata": {
+                        "description": "Optional. The name of the SKU"
+                      }
+                    },
+                    "retentionInDays": {
+                      "type": "int",
+                      "defaultValue": 30,
+                      "metadata": {
+                        "description": "Optional. The workspace data retention in days. Allowed values are per pricing plan. See pricing tiers documentation for details"
+                      }
+                    },
+                    "publicNetworkAccessForIngestion": {
+                      "type": "string",
+                      "defaultValue": "Enabled",
+                      "allowedValues": [
+                        "Enabled",
+                        "Disabled"
+                      ],
+                      "metadata": {
+                        "description": "Optional. The network access type for operating on the Log Analytics Workspace"
+                      }
+                    },
+                    "publicNetworkAccessForQuery": {
+                      "type": "string",
+                      "defaultValue": "Enabled",
+                      "allowedValues": [
+                        "Enabled",
+                        "Disabled"
+                      ],
+                      "metadata": {
+                        "description": "Optional. The network access type for operating on the Log Analytics Workspace"
+                      }
+                    },
+                    "enableLogAccessUsingOnlyResourcePermissions": {
+                      "type": "bool",
+                      "defaultValue": false,
+                      "metadata": {
+                        "description": "Optional. Flag that indicate which permission to use - resource or workspace or both"
+                      }
+                    },
+                    "solutionTypes": {
+                      "type": "array",
+                      "metadata": {
+                        "description": "Required. The solution names"
+                      }
+                    },
+                    "subscriptions": {
+                      "type": "array",
+                      "defaultValue": [],
+                      "metadata": {
+                        "description": "Optional. The subscription IDs that you want to monitor"
+                      }
+                    },
+                    "linkAutomationAccountResourceId": {
+                      "type": "string",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "Optional. Resource ID of the automation account you want to link to the workspace"
+                      }
+                    },
+                    "location": {
+                      "type": "string",
+                      "defaultValue": "[resourceGroup().location]",
+                      "metadata": {
+                        "description": "Optional. Location of the resource"
+                      }
+                    },
+                    "permissions": {
+                      "type": "array",
+                      "defaultValue": [],
+                      "metadata": {
+                        "description": "Optional. Array of Role Assignments to deploy"
+                      }
+                    }
+                  },
+                  "variables": {
+                    "nameVar": "[if(empty(parameters('customName')), toLower(format('log-{0}-{1}-{2}-{3}-{4}', parameters('workloadName'), parameters('applicationName'), parameters('environmentName'), parameters('regionName'), padLeft(parameters('index'), 2, '0'))), parameters('customName'))]"
+                  },
+                  "resources": [
+                    {
+                      "condition": "[not(equals(length(parameters('subscriptions')), 0))]",
+                      "copy": {
+                        "name": "datasources",
+                        "count": "[length(parameters('subscriptions'))]"
+                      },
+                      "type": "Microsoft.OperationalInsights/workspaces/dataSources",
+                      "apiVersion": "2020-08-01",
+                      "name": "[format('{0}/{1}', variables('nameVar'), if(empty(parameters('subscriptions')), format('{0}/empty1', variables('nameVar')), format('{0}/{1}', variables('nameVar'), replace(parameters('subscriptions')[copyIndex()].name, '&', ''))))]",
+                      "kind": "AzureActivityLog",
+                      "properties": {
+                        "linkedResourceId": "[format('/subscriptions/{0}/providers/microsoft.insights/eventTypes/management', string(parameters('subscriptions')[copyIndex()].value))]"
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('nameVar'))]"
+                      ]
+                    },
+                    {
+                      "condition": "[not(empty(parameters('linkAutomationAccountResourceId')))]",
+                      "type": "Microsoft.OperationalInsights/workspaces/linkedServices",
+                      "apiVersion": "2020-08-01",
+                      "name": "[format('{0}/{1}', variables('nameVar'), 'Automation')]",
+                      "properties": {
+                        "resourceId": "[parameters('linkAutomationAccountResourceId')]"
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('nameVar'))]"
+                      ]
+                    },
+                    {
+                      "type": "Microsoft.OperationalInsights/workspaces",
+                      "apiVersion": "2021-06-01",
+                      "name": "[variables('nameVar')]",
+                      "location": "[parameters('location')]",
+                      "tags": "[parameters('tags')]",
+                      "properties": {
+                        "sku": {
+                          "name": "[parameters('serviceTier')]"
+                        },
+                        "retentionInDays": "[parameters('retentionInDays')]",
+                        "publicNetworkAccessForIngestion": "[parameters('publicNetworkAccessForIngestion')]",
+                        "publicNetworkAccessForQuery": "[parameters('publicNetworkAccessForQuery')]",
+                        "features": {
+                          "enableLogAccessUsingOnlyResourcePermissions": "[parameters('enableLogAccessUsingOnlyResourcePermissions')]"
+                        }
+                      }
+                    },
+                    {
+                      "copy": {
+                        "name": "solution",
+                        "count": "[length(parameters('solutionTypes'))]"
+                      },
+                      "type": "Microsoft.OperationsManagement/solutions",
+                      "apiVersion": "2015-11-01-preview",
+                      "name": "[format('{0}({1})', parameters('solutionTypes')[copyIndex()], variables('nameVar'))]",
+                      "location": "[parameters('location')]",
+                      "tags": "[parameters('tags')]",
+                      "plan": {
+                        "name": "[format('{0}({1})', parameters('solutionTypes')[copyIndex()], variables('nameVar'))]",
+                        "product": "[format('OMSGallery/{0}', parameters('solutionTypes')[copyIndex()])]",
+                        "promotionCode": "",
+                        "publisher": "Microsoft"
+                      },
+                      "properties": {
+                        "workspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('nameVar'))]"
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('nameVar'))]"
+                      ]
+                    },
+                    {
+                      "condition": "[not(empty(parameters('linkAutomationAccountResourceId')))]",
+                      "type": "Microsoft.Insights/diagnosticSettings",
+                      "apiVersion": "2021-05-01-preview",
+                      "scope": "[format('Microsoft.Automation/automationAccounts/{0}', last(split(parameters('linkAutomationAccountResourceId'), '/')))]",
+                      "name": "diagSettings",
+                      "properties": {
+                        "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('nameVar'))]",
+                        "logs": [
+                          {
+                            "category": "JobLogs",
+                            "enabled": true
+                          },
+                          {
+                            "category": "JobStreams",
+                            "enabled": true
+                          },
+                          {
+                            "category": "DscNodeStatus",
+                            "enabled": true
+                          }
+                        ]
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('nameVar'))]"
+                      ]
+                    },
+                    {
+                      "copy": {
+                        "name": "roleAssignments",
+                        "count": "[length(parameters('permissions'))]"
+                      },
+                      "type": "Microsoft.Authorization/roleAssignments",
+                      "apiVersion": "2022-01-01-preview",
+                      "scope": "[format('Microsoft.OperationalInsights/workspaces/{0}', variables('nameVar'))]",
+                      "name": "[guid(resourceGroup().id, parameters('permissions')[copyIndex()].name, parameters('permissions')[copyIndex()].roleDefinitionId)]",
+                      "properties": {
+                        "principalId": "[parameters('permissions')[copyIndex()].principalId]",
+                        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', parameters('permissions')[copyIndex()].roleDefinitionId)]",
+                        "condition": "[if(and(contains(parameters('permissions')[copyIndex()], 'condition'), not(equals(parameters('permissions')[copyIndex()].condition, ''))), parameters('permissions')[copyIndex()].condition, null())]",
+                        "conditionVersion": "[if(and(contains(parameters('permissions')[copyIndex()], 'conditionVersion'), not(equals(parameters('permissions')[copyIndex()].conditionVersion, ''))), parameters('permissions')[copyIndex()].conditionVersion, null())]",
+                        "delegatedManagedIdentityResourceId": "[if(and(contains(parameters('permissions')[copyIndex()], 'delegatedManagedIdentityResourceId'), not(equals(parameters('permissions')[copyIndex()].delegatedManagedIdentityResourceId, ''))), parameters('permissions')[copyIndex()].delegatedManagedIdentityResourceId, null())]",
+                        "description": "[parameters('permissions')[copyIndex()].description]",
+                        "principalType": "[parameters('permissions')[copyIndex()].principalType]"
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('nameVar'))]"
+                      ]
+                    }
+                  ],
+                  "outputs": {
+                    "resourceName": {
+                      "type": "string",
+                      "value": "[variables('nameVar')]",
+                      "metadata": {
+                        "description": "The name of the Azure resource"
+                      }
+                    },
+                    "resourceID": {
+                      "type": "string",
+                      "value": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('nameVar'))]",
+                      "metadata": {
+                        "description": "The resource-id of the Azure resource"
+                      }
+                    },
+                    "workspaceId": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', variables('nameVar'))).customerId]",
+                      "metadata": {
+                        "description": "Workspace ID of the Log Analytics workspace"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "lawName": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', parameters('lawName')), '2020-10-01').outputs.resourceName.value]"
+            },
+            "lawID": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', parameters('lawName')), '2020-10-01').outputs.resourceID.value]"
+            },
+            "lawWorkspaceId": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', parameters('lawName')), '2020-10-01').outputs.workspaceId.value]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "Deploy-acr-aks",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "resourceName": {
+            "value": "acrinfrakspweu00"
+          },
+          "workSpaceId": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'rg-infr-aks-p-weu-00'), 'Microsoft.Resources/deployments', 'Deploy-vnet-law'), '2020-10-01').outputs.lawID.value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.15.31.15270",
+              "templateHash": "3891372990897922637"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "The Azure region to deploy the resourece"
+              }
+            },
+            "workSpaceId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "The workspace ID for the diagnostic settings."
+              }
+            },
+            "additionTags": {
+              "type": "object",
+              "defaultValue": {}
+            },
+            "resourceName": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the resource \"Storageaccount\""
+              }
+            }
+          },
+          "variables": {
+            "$fxv#0": {
+              "commonTags": {
+                "InSpark_EnvironmentType": "PROD",
+                "InSpark_BusinessApplication": "AKS",
+                "InSpark_InfrastructureManagedBy": "InSpark",
+                "InSpark_ApplicationManagedBy": "InSpark",
+                "InSpark_PipelineManagedBy": "InSpark"
+              }
+            },
+            "commonTags": "[variables('$fxv#0')]",
+            "tags": "[union(variables('commonTags').commonTags, parameters('additionTags'))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2020-10-01",
+              "name": "AzureContainerRegistry",
+              "properties": {
+                "expressionEvaluationOptions": {
+                  "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                  "applicationName": {
+                    "value": ""
+                  },
+                  "environmentName": {
+                    "value": ""
+                  },
+                  "index": {
+                    "value": 0
+                  },
+                  "regionName": {
+                    "value": ""
+                  },
+                  "workloadName": {
+                    "value": ""
+                  },
+                  "customName": {
+                    "value": "[parameters('resourceName')]"
+                  },
+                  "tags": {
+                    "value": "[variables('tags')]"
+                  },
+                  "acrSku": {
+                    "value": "Basic"
+                  },
+                  "location": {
+                    "value": "[parameters('location')]"
+                  },
+                  "acrAdminUserEnabled": {
+                    "value": false
+                  },
+                  "diagnosticSettings": "[if(empty(parameters('workSpaceId')), createObject('value', createArray()), createObject('value', createArray(createObject('name', 'Diag2Law', 'workspaceId', parameters('workSpaceId'), 'logs', createArray(createObject('categoryGroup', 'allLogs', 'enabled', true())), 'metrics', createArray(createObject('category', 'AllMetrics', 'enabled', true()))))))]"
+                },
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "metadata": {
+                    "_generator": {
+                      "name": "bicep",
+                      "version": "0.7.4.23292",
+                      "templateHash": "14409172999522356976"
+                    }
+                  },
+                  "parameters": {
+                    "workloadName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Required. The name of the workload this resource will be used for"
+                      }
+                    },
+                    "applicationName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Required. The name of the application"
+                      }
+                    },
+                    "environmentName": {
+                      "type": "string",
+                      "maxLength": 1,
+                      "metadata": {
+                        "description": "Required. The code of the environment this resource will be used in"
+                      }
+                    },
+                    "regionName": {
+                      "type": "string",
+                      "maxLength": 4,
+                      "metadata": {
+                        "description": "Required. The region this resource will be deployed in"
+                      }
+                    },
+                    "index": {
+                      "type": "int",
+                      "metadata": {
+                        "description": "Required. Index of the resource"
+                      }
+                    },
+                    "customName": {
+                      "type": "string",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "Optional. The name to use if not using the normal naming convention"
+                      }
+                    },
+                    "tags": {
+                      "type": "object",
+                      "defaultValue": {},
+                      "metadata": {
+                        "description": "Optional. Resource tags"
+                      }
+                    },
+                    "acrAdminUserEnabled": {
+                      "type": "bool",
+                      "defaultValue": false,
+                      "metadata": {
+                        "description": "Optional. Enable admin user that have push / pull permission to the registry"
+                      }
+                    },
+                    "anonymousPullEnabled": {
+                      "type": "bool",
+                      "defaultValue": false,
+                      "metadata": {
+                        "description": "Optional. Enables registry-wide pull from unauthenticated clients"
+                      }
+                    },
+                    "location": {
+                      "type": "string",
+                      "defaultValue": "[resourceGroup().location]",
+                      "metadata": {
+                        "description": "Optional. Location for all resources"
+                      }
+                    },
+                    "acrSku": {
+                      "type": "string",
+                      "defaultValue": "Standard",
+                      "allowedValues": [
+                        "Basic",
+                        "Classic",
+                        "Premium",
+                        "Standard"
+                      ],
+                      "metadata": {
+                        "description": "Optional. Specify the SKU for the ACR"
+                      }
+                    },
+                    "acrReplicaLocation": {
+                      "type": "array",
+                      "defaultValue": [],
+                      "metadata": {
+                        "description": "Optional. Location for ACR replica"
+                      }
+                    },
+                    "diagnosticSettings": {
+                      "type": "array",
+                      "defaultValue": [],
+                      "metadata": {
+                        "description": "Optional. Diagnostic settings configuration"
+                      }
+                    },
+                    "ipRules": {
+                      "type": "array",
+                      "defaultValue": [],
+                      "metadata": {
+                        "description": "Optional. The IP ACL rules"
+                      }
+                    },
+                    "networkRuleBypassOptions": {
+                      "type": "string",
+                      "defaultValue": "AzureServices",
+                      "metadata": {
+                        "description": "Optional. Bypass the network rules"
+                      },
+                      "allowedValues": [
+                        "AzureServices",
+                        "None"
+                      ]
+                    },
+                    "dataEndpointEnabled": {
+                      "type": "bool",
+                      "defaultValue": false,
+                      "metadata": {
+                        "description": "Optional. Enable Data endpoint"
+                      }
+                    },
+                    "zoneRedundancy": {
+                      "type": "string",
+                      "defaultValue": "Enabled",
+                      "metadata": {
+                        "description": "Optional. Enable zone Redundancy"
+                      },
+                      "allowedValues": [
+                        "Enabled",
+                        "Disabled"
+                      ]
+                    },
+                    "publicNetworkAccess": {
+                      "type": "string",
+                      "defaultValue": "Disabled",
+                      "metadata": {
+                        "description": "Optional. Enable Public network access to 'Selected networks'"
+                      },
+                      "allowedValues": [
+                        "Enabled",
+                        "Disabled"
+                      ]
+                    },
+                    "defaultAction": {
+                      "type": "string",
+                      "defaultValue": "Deny",
+                      "metadata": {
+                        "description": "Optional. Enable Public network access to 'All networks'"
+                      },
+                      "allowedValues": [
+                        "Allow",
+                        "Deny"
+                      ]
+                    },
+                    "regionEndpointEnabled": {
+                      "type": "bool",
+                      "defaultValue": false,
+                      "metadata": {
+                        "description": "Optional. Specifies whether the replications regional endpoint is enabled"
+                      }
+                    },
+                    "identity": {
+                      "type": "bool",
+                      "defaultValue": true,
+                      "metadata": {
+                        "description": "Optional. Managed Identity"
+                      }
+                    },
+                    "permissions": {
+                      "type": "array",
+                      "defaultValue": [],
+                      "metadata": {
+                        "description": "Optional. Array of Role Assignments to deploy"
+                      }
+                    }
+                  },
+                  "variables": {
+                    "acrName_var": "[if(empty(parameters('customName')), toLower(format('cr{0}{1}{2}{3}{4}', parameters('workloadName'), parameters('applicationName'), parameters('environmentName'), parameters('regionName'), padLeft(parameters('index'), 2, '0'))), parameters('customName'))]"
+                  },
+                  "resources": [
+                    {
+                      "condition": "[not(empty(parameters('acrReplicaLocation')))]",
+                      "copy": {
+                        "name": "acrReplica",
+                        "count": "[length(parameters('acrReplicaLocation'))]"
+                      },
+                      "type": "Microsoft.ContainerRegistry/registries/replications",
+                      "apiVersion": "2021-09-01",
+                      "name": "[format('{0}/{1}', variables('acrName_var'), parameters('acrReplicaLocation')[copyIndex()])]",
+                      "location": "[parameters('acrReplicaLocation')[copyIndex()]]",
+                      "tags": "[parameters('tags')]",
+                      "properties": {
+                        "zoneRedundancy": "[parameters('zoneRedundancy')]",
+                        "regionEndpointEnabled": "[parameters('regionEndpointEnabled')]"
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.ContainerRegistry/registries', variables('acrName_var'))]"
+                      ]
+                    },
+                    {
+                      "type": "Microsoft.ContainerRegistry/registries",
+                      "apiVersion": "2021-12-01-preview",
+                      "name": "[variables('acrName_var')]",
+                      "location": "[parameters('location')]",
+                      "tags": "[parameters('tags')]",
+                      "sku": {
+                        "name": "[parameters('acrSku')]"
+                      },
+                      "identity": {
+                        "type": "[if(parameters('identity'), 'SystemAssigned', 'None')]"
+                      },
+                      "properties": {
+                        "adminUserEnabled": "[parameters('acrAdminUserEnabled')]",
+                        "anonymousPullEnabled": "[parameters('anonymousPullEnabled')]",
+                        "networkRuleSet": "[if(not(contains(parameters('acrSku'), 'Premium')), null(), createObject('defaultAction', parameters('defaultAction'), 'ipRules', parameters('ipRules')))]",
+                        "dataEndpointEnabled": "[parameters('dataEndpointEnabled')]",
+                        "zoneRedundancy": "[if(not(contains(parameters('acrSku'), 'Premium')), null(), parameters('zoneRedundancy'))]",
+                        "publicNetworkAccess": "[if(equals(parameters('acrSku'), 'Premium'), parameters('publicNetworkAccess'), 'Enabled')]",
+                        "networkRuleBypassOptions": "[parameters('networkRuleBypassOptions')]"
+                      }
+                    },
+                    {
+                      "condition": "[not(empty(parameters('diagnosticSettings')))]",
+                      "copy": {
+                        "name": "diagSettings",
+                        "count": "[length(parameters('diagnosticSettings'))]"
+                      },
+                      "type": "Microsoft.Insights/diagnosticSettings",
+                      "apiVersion": "2021-05-01-preview",
+                      "scope": "[format('Microsoft.ContainerRegistry/registries/{0}', variables('acrName_var'))]",
+                      "name": "[parameters('diagnosticSettings')[copyIndex()].name]",
+                      "properties": {
+                        "workspaceId": "[if(contains(parameters('diagnosticSettings')[copyIndex()], 'workspaceId'), parameters('diagnosticSettings')[copyIndex()].workspaceId, null())]",
+                        "storageAccountId": "[if(contains(parameters('diagnosticSettings')[copyIndex()], 'diagnosticsStorageAccountId'), parameters('diagnosticSettings')[copyIndex()].diagnosticsStorageAccountId, null())]",
+                        "logs": "[if(contains(parameters('diagnosticSettings')[copyIndex()], 'logs'), parameters('diagnosticSettings')[copyIndex()].logs, null())]",
+                        "metrics": "[if(contains(parameters('diagnosticSettings')[copyIndex()], 'metrics'), parameters('diagnosticSettings')[copyIndex()].metrics, null())]"
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.ContainerRegistry/registries', variables('acrName_var'))]"
+                      ]
+                    },
+                    {
+                      "copy": {
+                        "name": "roleAssignments",
+                        "count": "[length(parameters('permissions'))]"
+                      },
+                      "type": "Microsoft.Authorization/roleAssignments",
+                      "apiVersion": "2022-01-01-preview",
+                      "scope": "[format('Microsoft.ContainerRegistry/registries/{0}', variables('acrName_var'))]",
+                      "name": "[guid(resourceGroup().id, parameters('permissions')[copyIndex()].name, parameters('permissions')[copyIndex()].roleDefinitionId)]",
+                      "properties": {
+                        "principalId": "[parameters('permissions')[copyIndex()].principalId]",
+                        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', parameters('permissions')[copyIndex()].roleDefinitionId)]",
+                        "condition": "[if(and(contains(parameters('permissions')[copyIndex()], 'condition'), not(equals(parameters('permissions')[copyIndex()].condition, ''))), parameters('permissions')[copyIndex()].condition, null())]",
+                        "conditionVersion": "[if(and(contains(parameters('permissions')[copyIndex()], 'conditionVersion'), not(equals(parameters('permissions')[copyIndex()].conditionVersion, ''))), parameters('permissions')[copyIndex()].conditionVersion, null())]",
+                        "delegatedManagedIdentityResourceId": "[if(and(contains(parameters('permissions')[copyIndex()], 'delegatedManagedIdentityResourceId'), not(equals(parameters('permissions')[copyIndex()].delegatedManagedIdentityResourceId, ''))), parameters('permissions')[copyIndex()].delegatedManagedIdentityResourceId, null())]",
+                        "description": "[parameters('permissions')[copyIndex()].description]",
+                        "principalType": "[parameters('permissions')[copyIndex()].principalType]"
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.ContainerRegistry/registries', variables('acrName_var'))]"
+                      ]
+                    }
+                  ],
+                  "outputs": {
+                    "resourceName": {
+                      "type": "string",
+                      "value": "[variables('acrName_var')]",
+                      "metadata": {
+                        "description": "The name of the Azure resource"
+                      }
+                    },
+                    "resourceID": {
+                      "type": "string",
+                      "value": "[resourceId('Microsoft.ContainerRegistry/registries', variables('acrName_var'))]",
+                      "metadata": {
+                        "description": "The resource-id of the Azure resource"
+                      }
+                    },
+                    "acrLoginServer": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.ContainerRegistry/registries', variables('acrName_var')), '2019-05-01').loginServer]",
+                      "metadata": {
+                        "description": "The FQDN of the ACR login server"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "resourceId": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'AzureContainerRegistry'), '2020-10-01').outputs.resourceID.value]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'rg-infr-aks-p-weu-00'), 'Microsoft.Resources/deployments', 'Deploy-vnet-law')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "Deploy-aks",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "containerRegistryId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'Deploy-acr-aks'), '2020-10-01').outputs.resourceId.value]"
+          },
+          "lawid": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'rg-infr-aks-p-weu-00'), 'Microsoft.Resources/deployments', 'Deploy-vnet-law'), '2020-10-01').outputs.lawID.value]"
+          },
+          "vnetSubnetId": {
+            "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'rg-infr-aks-p-weu-00'), 'Microsoft.Resources/deployments', 'Deploy-vnet-aks'), '2020-10-01').outputs.vnetName.value, 'AzureAKSsubnet')]"
+          },
+          "apiServerAccessProfile": {
+            "value": {
+              "authorizedIPRanges": [
+                "86.81.62.251",
+                "62.45.84.93"
+              ]
+            }
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.15.31.15270",
+              "templateHash": "11553684236197382246"
+            }
+          },
+          "parameters": {
+            "vnetSubnetId": {
+              "type": "string"
+            },
+            "customName": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Optional. The name to use if not using the normal naming convention"
+              }
+            },
+            "lawid": {
+              "type": "string",
+              "defaultValue": ""
+            },
+            "additionTags": {
+              "type": "object",
+              "defaultValue": {}
+            },
+            "linuxProfile": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Optional. Profile for Linux VMs in the container service cluster"
+              }
+            },
+            "windowsProfile": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Optional. Profile for Windows VMs in the container service cluster"
+              }
+            },
+            "enableAKSPolicy": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Optional. Whether or not to enable the AKS Policy add-on"
+              }
+            },
+            "serviceCidr": {
+              "type": "string",
+              "defaultValue": ""
+            },
+            "nodeResourceGroup": {
+              "type": "string",
+              "defaultValue": "rg-infr-aksnodes-p-weu-00",
+              "metadata": {
+                "description": "Optional. Name of the resource group containing agent pool nodes"
+              }
+            },
+            "enablePodSecurityPolicy": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Optional. Whether to enable Kubernetes pod security policy"
+              }
+            },
+            "aadProfile": {
+              "type": "object",
+              "defaultValue": {
+                "managed": true,
+                "enableAzureRbac": true,
+                "adminGroupObjectIDs": [
+                  "f65ea094-0f7f-4e12-9de9-f7027a4ad604"
+                ],
+                "tenantID": "[subscription().tenantId]"
+              },
+              "metadata": {
+                "description": "Optional. Profile of Azure Active Directory configuration"
+              }
+            },
+            "upgradeChannel": {
+              "type": "string",
+              "defaultValue": "stable",
+              "allowedValues": [
+                "stable",
+                "node-image",
+                "patch",
+                "none",
+                "rapid"
+              ],
+              "metadata": {
+                "description": "Optional. AutoUpgradeProfile"
+              }
+            },
+            "autoScalerProfile": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Optional. Parameters to be applied to the cluster-autoscaler when enabled"
+              }
+            },
+            "addonProfiles": {
+              "type": "object",
+              "defaultValue": {
+                "azureKeyvaultSecretsProvider": {
+                  "enabled": true,
+                  "config": {
+                    "enableSecretRotation": "true"
+                  }
+                }
+              },
+              "metadata": {
+                "description": "Optional. Profile of managed cluster add-ons"
+              }
+            },
+            "apiServerAccessProfile": {
+              "type": "object",
+              "defaultValue": {
+                "authorizedIPRanges": [
+                  "62.45.84.93"
+                ]
+              },
+              "metadata": {
+                "description": "Optional. Access profile for managed cluster API server"
+              }
+            },
+            "diskEncryptionSetId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Optional. ResourceId of the disk encryption set to use for enabling encryption at rest"
+              }
+            },
+            "containerRegistryId": {
+              "type": "string",
+              "defaultValue": "/////",
+              "metadata": {
+                "description": "Optional. The resource Id of the container registry this cluster should use. Default is `/////` to prevent a bug in the template"
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "westeurope",
+              "metadata": {
+                "description": "Optional. Location of the resource"
+              }
+            },
+            "diagnosticsRetentionPeriod": {
+              "type": "int",
+              "defaultValue": 14,
+              "metadata": {
+                "description": "Optional. The humber of days to keep the diagnostic logging"
+              }
+            },
+            "time": {
+              "type": "string",
+              "defaultValue": "[replace(utcNow(), ':', '-')]",
+              "metadata": {
+                "description": "Optional. Time parameter to create unique deployment. Do not set in parameter file!"
+              }
+            }
+          },
+          "variables": {
+            "$fxv#0": {
+              "commonTags": {
+                "InSpark_EnvironmentType": "PROD",
+                "InSpark_BusinessApplication": "AKS",
+                "InSpark_InfrastructureManagedBy": "InSpark",
+                "InSpark_ApplicationManagedBy": "InSpark",
+                "InSpark_PipelineManagedBy": "InSpark"
+              }
+            },
+            "commonTags": "[variables('$fxv#0')]",
+            "tags": "[union(variables('commonTags').commonTags, parameters('additionTags'))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2020-10-01",
+              "name": "[format('AzureKubernetesService-{0}', parameters('time'))]",
+              "properties": {
+                "expressionEvaluationOptions": {
+                  "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                  "applicationName": {
+                    "value": "aks"
+                  },
+                  "environmentName": {
+                    "value": "p"
+                  },
+                  "workloadName": {
+                    "value": "alz"
+                  },
+                  "regionName": {
+                    "value": "w"
+                  },
+                  "index": {
+                    "value": 1
+                  },
+                  "customName": {
+                    "value": "[parameters('customName')]"
+                  },
+                  "tags": {
+                    "value": "[variables('tags')]"
+                  },
+                  "kubernetesVersion": {
+                    "value": "1.24.9"
+                  },
+                  "dnsPrefix": {
+                    "value": "aks"
+                  },
+                  "agentPools": {
+                    "value": [
+                      {
+                        "count": 2,
+                        "vmSize": "Standard_B4ms",
+                        "osDiskSizeGB": 40,
+                        "osDiskType": "Ephemeral",
+                        "vnetSubnetID": "[parameters('vnetSubnetId')]",
+                        "maxPods": 40,
+                        "maxCount": 4,
+                        "minCount": 2,
+                        "enableAutoScaling": true,
+                        "type": "VirtualMachineScaleSets",
+                        "mode": "System",
+                        "availabilityZones": [
+                          "1",
+                          "2",
+                          "3"
+                        ],
+                        "enableNodePublicIP": false,
+                        "tags": "[variables('tags')]",
+                        "nodeLabels": {},
+                        "nodeTaints": [],
+                        "name": "agtplw2"
+                      }
+                    ]
+                  },
+                  "linuxProfile": {
+                    "value": "[parameters('linuxProfile')]"
+                  },
+                  "windowsProfile": {
+                    "value": "[parameters('windowsProfile')]"
+                  },
+                  "logAnalyticsWorkspaceId": {
+                    "value": "[parameters('lawid')]"
+                  },
+                  "enableAKSPolicy": {
+                    "value": "[parameters('enableAKSPolicy')]"
+                  },
+                  "nodeResourceGroup": {
+                    "value": "[parameters('nodeResourceGroup')]"
+                  },
+                  "enableRBAC": {
+                    "value": true
+                  },
+                  "enablePodSecurityPolicy": {
+                    "value": "[parameters('enablePodSecurityPolicy')]"
+                  },
+                  "networkProfile": {
+                    "value": {
+                      "loadBalancerSku": "standard",
+                      "outboundType": "loadBalancer",
+                      "serviceCidr": "10.224.5.0/24",
+                      "dnsServiceIp": "10.224.5.10",
+                      "dockerBridgeCidr": "172.17.0.1/16",
+                      "networkPlugin": "azure",
+                      "networkPolicy": "calico"
+                    }
+                  },
+                  "aadProfile": {
+                    "value": "[parameters('aadProfile')]"
+                  },
+                  "upgradeChannel": {
+                    "value": "[parameters('upgradeChannel')]"
+                  },
+                  "autoScalerProfile": {
+                    "value": "[parameters('autoScalerProfile')]"
+                  },
+                  "addonProfiles": {
+                    "value": "[parameters('addonProfiles')]"
+                  },
+                  "apiServerAccessProfile": {
+                    "value": "[parameters('apiServerAccessProfile')]"
+                  },
+                  "diskEncryptionSetId": {
+                    "value": "[parameters('diskEncryptionSetId')]"
+                  },
+                  "containerRegistryId": {
+                    "value": "[parameters('containerRegistryId')]"
+                  },
+                  "location": {
+                    "value": "[parameters('location')]"
+                  },
+                  "diagnosticsRetentionPeriod": {
+                    "value": "[parameters('diagnosticsRetentionPeriod')]"
+                  },
+                  "permissions": {
+                    "value": [
+                      {
+                        "name": "Cluster-Admin-AKS",
+                        "principalId": "f65ea094-0f7f-4e12-9de9-f7027a4ad604",
+                        "principalType": "Group",
+                        "roleDefinitionId": "b1ff04bb-8a4e-4dc4-8eb5-8693973ce19b",
+                        "description": "Cluster Admin for accessing AKS API"
+                      }
+                    ]
+                  }
+                },
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "metadata": {
+                    "_generator": {
+                      "name": "bicep",
+                      "version": "0.8.9.13224",
+                      "templateHash": "2601052007844296686"
+                    }
+                  },
+                  "parameters": {
+                    "applicationName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Required. The name of the application"
+                      }
+                    },
+                    "environmentName": {
+                      "type": "string",
+                      "maxLength": 1,
+                      "metadata": {
+                        "description": "Required. The code of the environment this resource will be used in"
+                      }
+                    },
+                    "workloadName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Required. The name of the workload this resource will be used for"
+                      }
+                    },
+                    "regionName": {
+                      "type": "string",
+                      "maxLength": 4,
+                      "metadata": {
+                        "description": "Required. Region of the resource"
+                      }
+                    },
+                    "index": {
+                      "type": "int",
+                      "metadata": {
+                        "description": "Required. Index of the resource"
+                      }
+                    },
+                    "customName": {
+                      "type": "string",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "Optional. The name to use if not using the normal naming convention"
+                      }
+                    },
+                    "tags": {
+                      "type": "object",
+                      "defaultValue": {},
+                      "metadata": {
+                        "description": "Optional. Resource tags"
+                      }
+                    },
+                    "kubernetesVersion": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Required. Version of Kubernetes specified when creating the managed cluster"
+                      }
+                    },
+                    "dnsPrefix": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Required. DNS prefix specified when creating the managed cluster, cannot be updated once the managed cluster has been created"
+                      }
+                    },
+                    "agentPools": {
+                      "type": "array",
+                      "metadata": {
+                        "description": "Required. Properties of the agent pools"
+                      }
+                    },
+                    "linuxProfile": {
+                      "type": "object",
+                      "defaultValue": {},
+                      "metadata": {
+                        "description": "Optional. Profile for Linux VMs in the container service cluster"
+                      }
+                    },
+                    "windowsProfile": {
+                      "type": "object",
+                      "defaultValue": {},
+                      "metadata": {
+                        "description": "Optional. Profile for Windows VMs in the container service cluster"
+                      }
+                    },
+                    "logAnalyticsWorkspaceId": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Required. The resource Id of the log analytics workspace that will monitor the cluster"
+                      }
+                    },
+                    "enableAKSPolicy": {
+                      "type": "bool",
+                      "defaultValue": true,
+                      "metadata": {
+                        "description": "Optional. Whether or not to enable the AKS Policy add-on"
+                      }
+                    },
+                    "nodeResourceGroup": {
+                      "type": "string",
+                      "defaultValue": "[format('{0}-nodes', resourceGroup().name)]",
+                      "metadata": {
+                        "description": "Optional. Name of the resource group containing agent pool nodes"
+                      }
+                    },
+                    "enableRBAC": {
+                      "type": "bool",
+                      "defaultValue": true,
+                      "metadata": {
+                        "description": "Optional. Whether to enable Kubernetes Role-Based Access Control"
+                      }
+                    },
+                    "enablePodSecurityPolicy": {
+                      "type": "bool",
+                      "defaultValue": false,
+                      "metadata": {
+                        "description": "Optional. Whether to enable Kubernetes pod security policy"
+                      }
+                    },
+                    "networkProfile": {
+                      "type": "object",
+                      "metadata": {
+                        "description": "Required. Profile of network configuration"
+                      }
+                    },
+                    "aadProfile": {
+                      "type": "object",
+                      "defaultValue": {
+                        "managed": true,
+                        "enableAzureRbac": true
+                      },
+                      "metadata": {
+                        "description": "Optional. Profile of Azure Active Directory configuration"
+                      }
+                    },
+                    "upgradeChannel": {
+                      "type": "string",
+                      "defaultValue": "stable",
+                      "allowedValues": [
+                        "stable",
+                        "node-image",
+                        "patch",
+                        "none",
+                        "rapid"
+                      ],
+                      "metadata": {
+                        "description": "Optional. AutoUpgradeProfile"
+                      }
+                    },
+                    "autoScalerProfile": {
+                      "type": "object",
+                      "defaultValue": {},
+                      "metadata": {
+                        "description": "Optional. Parameters to be applied to the cluster-autoscaler when enabled"
+                      }
+                    },
+                    "addonProfiles": {
+                      "type": "object",
+                      "defaultValue": {
+                        "azureKeyvaultSecretsProvider": {
+                          "enabled": true,
+                          "config": {
+                            "enableSecretRotation": "true"
+                          }
+                        }
+                      },
+                      "metadata": {
+                        "description": "Optional. Profile of managed cluster add-ons"
+                      }
+                    },
+                    "apiServerAccessProfile": {
+                      "type": "object",
+                      "defaultValue": {},
+                      "metadata": {
+                        "description": "Optional. Access profile for managed cluster API server"
+                      }
+                    },
+                    "diskEncryptionSetId": {
+                      "type": "string",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "Optional. ResourceId of the disk encryption set to use for enabling encryption at rest"
+                      }
+                    },
+                    "containerRegistryId": {
+                      "type": "string",
+                      "defaultValue": "/////",
+                      "metadata": {
+                        "description": "Optional. The resource Id of the container registry this cluster should use. Default is `/////` to prevent a bug in the template"
+                      }
+                    },
+                    "location": {
+                      "type": "string",
+                      "defaultValue": "[resourceGroup().location]",
+                      "metadata": {
+                        "description": "Optional. Location of the resource"
+                      }
+                    },
+                    "diagnosticsRetentionPeriod": {
+                      "type": "int",
+                      "defaultValue": 14,
+                      "metadata": {
+                        "description": "Optional. The humber of days to keep the diagnostic logging"
+                      }
+                    },
+                    "permissions": {
+                      "type": "array",
+                      "defaultValue": [],
+                      "metadata": {
+                        "description": "Optional. Array of Role Assignments to deploy"
+                      }
+                    }
+                  },
+                  "variables": {
+                    "nameVar": "[if(empty(parameters('customName')), toLower(format('aks-{0}-{1}-{2}-{3}-{4}', parameters('workloadName'), parameters('applicationName'), parameters('environmentName'), parameters('regionName'), padLeft(parameters('index'), 2, '0'))), parameters('customName'))]",
+                    "agentPoolIdentity": "[toLower(format('aks-{0}-{1}-{2}-{3}-{4}-agentpool', parameters('workloadName'), parameters('applicationName'), parameters('environmentName'), parameters('regionName'), padLeft(parameters('index'), 2, '0')))]",
+                    "mandatoryAddOnProfile": {
+                      "kubeDashboard": {
+                        "enabled": false
+                      },
+                      "omsagent": {
+                        "enabled": true,
+                        "config": {
+                          "logAnalyticsWorkspaceResourceID": "[parameters('logAnalyticsWorkspaceId')]"
+                        }
+                      },
+                      "azurepolicy": {
+                        "enabled": "[parameters('enableAKSPolicy')]",
+                        "config": {
+                          "version": "v2"
+                        }
+                      }
+                    },
+                    "addOnProfiles_var": "[union(variables('mandatoryAddOnProfile'), parameters('addonProfiles'))]"
+                  },
+                  "resources": [
+                    {
+                      "type": "Microsoft.ContainerService/managedClusters",
+                      "apiVersion": "2022-06-02-preview",
+                      "name": "[variables('nameVar')]",
+                      "location": "[parameters('location')]",
+                      "tags": "[parameters('tags')]",
+                      "properties": {
+                        "kubernetesVersion": "[parameters('kubernetesVersion')]",
+                        "dnsPrefix": "[parameters('dnsPrefix')]",
+                        "agentPoolProfiles": "[parameters('agentPools')]",
+                        "linuxProfile": "[if(empty(parameters('linuxProfile')), null(), parameters('linuxProfile'))]",
+                        "windowsProfile": "[if(empty(parameters('windowsProfile')), null(), parameters('windowsProfile'))]",
+                        "addonProfiles": "[variables('addOnProfiles_var')]",
+                        "nodeResourceGroup": "[parameters('nodeResourceGroup')]",
+                        "enableRBAC": "[parameters('enableRBAC')]",
+                        "enablePodSecurityPolicy": "[parameters('enablePodSecurityPolicy')]",
+                        "networkProfile": "[parameters('networkProfile')]",
+                        "aadProfile": "[if(empty(parameters('aadProfile')), null(), parameters('aadProfile'))]",
+                        "autoScalerProfile": "[parameters('autoScalerProfile')]",
+                        "apiServerAccessProfile": "[parameters('apiServerAccessProfile')]",
+                        "diskEncryptionSetID": "[if(empty(parameters('diskEncryptionSetId')), null(), parameters('diskEncryptionSetId'))]",
+                        "autoUpgradeProfile": {
+                          "upgradeChannel": "[parameters('upgradeChannel')]"
+                        }
+                      },
+                      "identity": {
+                        "type": "SystemAssigned"
+                      },
+                      "sku": {
+                        "name": "Basic",
+                        "tier": "[if(and(contains(parameters('apiServerAccessProfile'), 'enablePrivateCluster'), equals(parameters('apiServerAccessProfile').enablePrivateCluster, true())), 'Free', 'Paid')]"
+                      }
+                    },
+                    {
+                      "copy": {
+                        "name": "roleAssignments",
+                        "count": "[length(parameters('permissions'))]"
+                      },
+                      "type": "Microsoft.Authorization/roleAssignments",
+                      "apiVersion": "2022-01-01-preview",
+                      "scope": "[format('Microsoft.ContainerService/managedClusters/{0}', variables('nameVar'))]",
+                      "name": "[guid(resourceGroup().id, parameters('permissions')[copyIndex()].name, parameters('permissions')[copyIndex()].roleDefinitionId)]",
+                      "properties": {
+                        "principalId": "[parameters('permissions')[copyIndex()].principalId]",
+                        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', parameters('permissions')[copyIndex()].roleDefinitionId)]",
+                        "condition": "[if(and(contains(parameters('permissions')[copyIndex()], 'condition'), not(equals(parameters('permissions')[copyIndex()].condition, ''))), parameters('permissions')[copyIndex()].condition, null())]",
+                        "conditionVersion": "[if(and(contains(parameters('permissions')[copyIndex()], 'conditionVersion'), not(equals(parameters('permissions')[copyIndex()].conditionVersion, ''))), parameters('permissions')[copyIndex()].conditionVersion, null())]",
+                        "delegatedManagedIdentityResourceId": "[if(and(contains(parameters('permissions')[copyIndex()], 'delegatedManagedIdentityResourceId'), not(equals(parameters('permissions')[copyIndex()].delegatedManagedIdentityResourceId, ''))), parameters('permissions')[copyIndex()].delegatedManagedIdentityResourceId, null())]",
+                        "description": "[parameters('permissions')[copyIndex()].description]",
+                        "principalType": "[parameters('permissions')[copyIndex()].principalType]"
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.ContainerService/managedClusters', variables('nameVar'))]"
+                      ]
+                    },
+                    {
+                      "type": "Microsoft.Insights/diagnosticSettings",
+                      "apiVersion": "2021-05-01-preview",
+                      "scope": "[format('Microsoft.ContainerService/managedClusters/{0}', variables('nameVar'))]",
+                      "name": "AKSDiagnostics",
+                      "properties": {
+                        "workspaceId": "[parameters('logAnalyticsWorkspaceId')]",
+                        "logs": [
+                          {
+                            "category": "kube-apiserver",
+                            "enabled": true,
+                            "retentionPolicy": {
+                              "days": "[parameters('diagnosticsRetentionPeriod')]",
+                              "enabled": true
+                            }
+                          },
+                          {
+                            "category": "kube-audit",
+                            "enabled": true,
+                            "retentionPolicy": {
+                              "days": "[parameters('diagnosticsRetentionPeriod')]",
+                              "enabled": true
+                            }
+                          },
+                          {
+                            "category": "kube-controller-manager",
+                            "enabled": true,
+                            "retentionPolicy": {
+                              "days": "[parameters('diagnosticsRetentionPeriod')]",
+                              "enabled": true
+                            }
+                          },
+                          {
+                            "category": "kube-scheduler",
+                            "enabled": true,
+                            "retentionPolicy": {
+                              "days": "[parameters('diagnosticsRetentionPeriod')]",
+                              "enabled": true
+                            }
+                          },
+                          {
+                            "category": "cluster-autoscaler",
+                            "enabled": true,
+                            "retentionPolicy": {
+                              "days": "[parameters('diagnosticsRetentionPeriod')]",
+                              "enabled": true
+                            }
+                          }
+                        ],
+                        "metrics": [
+                          {
+                            "category": "AllMetrics",
+                            "enabled": true,
+                            "retentionPolicy": {
+                              "days": "[parameters('diagnosticsRetentionPeriod')]",
+                              "enabled": true
+                            }
+                          }
+                        ]
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.ContainerService/managedClusters', variables('nameVar'))]"
+                      ]
+                    },
+                    {
+                      "type": "Microsoft.Authorization/roleAssignments",
+                      "apiVersion": "2020-10-01-preview",
+                      "scope": "[format('Microsoft.ContainerService/managedClusters/{0}', variables('nameVar'))]",
+                      "name": "[format('{0}', guid(resourceGroup().id, variables('nameVar'), 'Monitoring Metrics Publisher'))]",
+                      "properties": {
+                        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', '3913510d-42f4-4e42-8a64-420c390055eb')]",
+                        "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('nameVar'))).addonProfiles.omsagent.identity.objectId]"
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.ContainerService/managedClusters', variables('nameVar'))]"
+                      ]
+                    },
+                    {
+                      "copy": {
+                        "name": "vnet_roleAssignment",
+                        "count": "[length(parameters('agentPools'))]"
+                      },
+                      "type": "Microsoft.Resources/deployments",
+                      "apiVersion": "2020-10-01",
+                      "name": "[format('{0}-vnet-subnet-rbac{1}', variables('nameVar'), add(copyIndex(), 1))]",
+                      "resourceGroup": "[split(parameters('agentPools')[copyIndex()].vnetSubnetId, '/')[4]]",
+                      "properties": {
+                        "expressionEvaluationOptions": {
+                          "scope": "inner"
+                        },
+                        "mode": "Incremental",
+                        "parameters": {
+                          "permissions": {
+                            "value": [
+                              {
+                                "name": "[parameters('agentPools')[copyIndex()].vnetSubnetId]",
+                                "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('nameVar')), '2022-06-02-preview', 'full').identity.principalId]",
+                                "principalType": "ServicePrincipal",
+                                "roleDefinitionId": "4d97b98b-1d4f-4787-a291-c67834d212e7",
+                                "description": "Needed for AKS Cluster"
+                              }
+                            ]
+                          }
+                        },
+                        "template": {
+                          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                          "contentVersion": "1.0.0.0",
+                          "metadata": {
+                            "_generator": {
+                              "name": "bicep",
+                              "version": "0.4.1318.3566",
+                              "templateHash": "8556645354750312141"
+                            }
+                          },
+                          "parameters": {
+                            "permissions": {
+                              "type": "array",
+                              "metadata": {
+                                "description": "Required. Array of Role Assignments to deploy"
+                              }
+                            }
+                          },
+                          "resources": [
+                            {
+                              "copy": {
+                                "name": "roleAssignments",
+                                "count": "[length(parameters('permissions'))]"
+                              },
+                              "type": "Microsoft.Authorization/roleAssignments",
+                              "apiVersion": "2022-01-01-preview",
+                              "name": "[guid(resourceGroup().id, parameters('permissions')[copyIndex()].name, parameters('permissions')[copyIndex()].roleDefinitionId)]",
+                              "properties": {
+                                "principalId": "[parameters('permissions')[copyIndex()].principalId]",
+                                "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', parameters('permissions')[copyIndex()].roleDefinitionId)]",
+                                "condition": "[if(and(contains(parameters('permissions')[copyIndex()], 'condition'), not(equals(parameters('permissions')[copyIndex()].condition, ''))), parameters('permissions')[copyIndex()].condition, null())]",
+                                "conditionVersion": "[if(and(contains(parameters('permissions')[copyIndex()], 'conditionVersion'), not(equals(parameters('permissions')[copyIndex()].conditionVersion, ''))), parameters('permissions')[copyIndex()].conditionVersion, null())]",
+                                "delegatedManagedIdentityResourceId": "[if(and(contains(parameters('permissions')[copyIndex()], 'delegatedManagedIdentityResourceId'), not(equals(parameters('permissions')[copyIndex()].delegatedManagedIdentityResourceId, ''))), parameters('permissions')[copyIndex()].delegatedManagedIdentityResourceId, null())]",
+                                "description": "[parameters('permissions')[copyIndex()].description]",
+                                "principalType": "[parameters('permissions')[copyIndex()].principalType]"
+                              }
+                            }
+                          ],
+                          "outputs": {
+                            "resourceName": {
+                              "type": "string",
+                              "value": "[guid(resourceGroup().id, parameters('permissions')[0].name, parameters('permissions')[0].roleDefinitionId)]",
+                              "metadata": {
+                                "description": "The name of the Azure resource"
+                              }
+                            },
+                            "resourceID": {
+                              "type": "string",
+                              "value": "[resourceId('Microsoft.Authorization/roleAssignments', guid(resourceGroup().id, parameters('permissions')[0].name, parameters('permissions')[0].roleDefinitionId))]",
+                              "metadata": {
+                                "description": "The resource ID of the Azure resource"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.ContainerService/managedClusters', variables('nameVar'))]"
+                      ]
+                    },
+                    {
+                      "condition": "[contains(parameters('containerRegistryId'), 'subscriptions')]",
+                      "type": "Microsoft.Resources/deployments",
+                      "apiVersion": "2020-10-01",
+                      "name": "[format('{0}-acr-rbac', variables('nameVar'))]",
+                      "subscriptionId": "[split(parameters('containerRegistryId'), '/')[2]]",
+                      "resourceGroup": "[split(parameters('containerRegistryId'), '/')[4]]",
+                      "properties": {
+                        "expressionEvaluationOptions": {
+                          "scope": "inner"
+                        },
+                        "mode": "Incremental",
+                        "parameters": {
+                          "permissions": {
+                            "value": [
+                              {
+                                "name": "[format('{0}-acr-rbac', variables('nameVar'))]",
+                                "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('nameVar'))).identityProfile.kubeletidentity.objectId]",
+                                "principalType": "ServicePrincipal",
+                                "roleDefinitionId": "7f951dda-4ed3-4680-a7ca-43fe172d538d",
+                                "description": "Needed for AKS Cluster"
+                              }
+                            ]
+                          }
+                        },
+                        "template": {
+                          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                          "contentVersion": "1.0.0.0",
+                          "metadata": {
+                            "_generator": {
+                              "name": "bicep",
+                              "version": "0.4.1318.3566",
+                              "templateHash": "8556645354750312141"
+                            }
+                          },
+                          "parameters": {
+                            "permissions": {
+                              "type": "array",
+                              "metadata": {
+                                "description": "Required. Array of Role Assignments to deploy"
+                              }
+                            }
+                          },
+                          "resources": [
+                            {
+                              "copy": {
+                                "name": "roleAssignments",
+                                "count": "[length(parameters('permissions'))]"
+                              },
+                              "type": "Microsoft.Authorization/roleAssignments",
+                              "apiVersion": "2022-01-01-preview",
+                              "name": "[guid(resourceGroup().id, parameters('permissions')[copyIndex()].name, parameters('permissions')[copyIndex()].roleDefinitionId)]",
+                              "properties": {
+                                "principalId": "[parameters('permissions')[copyIndex()].principalId]",
+                                "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', parameters('permissions')[copyIndex()].roleDefinitionId)]",
+                                "condition": "[if(and(contains(parameters('permissions')[copyIndex()], 'condition'), not(equals(parameters('permissions')[copyIndex()].condition, ''))), parameters('permissions')[copyIndex()].condition, null())]",
+                                "conditionVersion": "[if(and(contains(parameters('permissions')[copyIndex()], 'conditionVersion'), not(equals(parameters('permissions')[copyIndex()].conditionVersion, ''))), parameters('permissions')[copyIndex()].conditionVersion, null())]",
+                                "delegatedManagedIdentityResourceId": "[if(and(contains(parameters('permissions')[copyIndex()], 'delegatedManagedIdentityResourceId'), not(equals(parameters('permissions')[copyIndex()].delegatedManagedIdentityResourceId, ''))), parameters('permissions')[copyIndex()].delegatedManagedIdentityResourceId, null())]",
+                                "description": "[parameters('permissions')[copyIndex()].description]",
+                                "principalType": "[parameters('permissions')[copyIndex()].principalType]"
+                              }
+                            }
+                          ],
+                          "outputs": {
+                            "resourceName": {
+                              "type": "string",
+                              "value": "[guid(resourceGroup().id, parameters('permissions')[0].name, parameters('permissions')[0].roleDefinitionId)]",
+                              "metadata": {
+                                "description": "The name of the Azure resource"
+                              }
+                            },
+                            "resourceID": {
+                              "type": "string",
+                              "value": "[resourceId('Microsoft.Authorization/roleAssignments', guid(resourceGroup().id, parameters('permissions')[0].name, parameters('permissions')[0].roleDefinitionId))]",
+                              "metadata": {
+                                "description": "The resource ID of the Azure resource"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.ContainerService/managedClusters', variables('nameVar'))]"
+                      ]
+                    },
+                    {
+                      "type": "Microsoft.Resources/deployments",
+                      "apiVersion": "2020-10-01",
+                      "name": "[format('{0}-vmc-rbac', variables('agentPoolIdentity'))]",
+                      "resourceGroup": "[parameters('nodeResourceGroup')]",
+                      "properties": {
+                        "expressionEvaluationOptions": {
+                          "scope": "inner"
+                        },
+                        "mode": "Incremental",
+                        "parameters": {
+                          "permissions": {
+                            "value": [
+                              {
+                                "name": "[variables('agentPoolIdentity')]",
+                                "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('nameVar'))).identityProfile.kubeletidentity.objectId]",
+                                "principalType": "ServicePrincipal",
+                                "roleDefinitionId": "9980e02c-c2be-4d73-94e8-173b1dc7cf3c",
+                                "description": "Needed for AKS Cluster"
+                              }
+                            ]
+                          }
+                        },
+                        "template": {
+                          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                          "contentVersion": "1.0.0.0",
+                          "metadata": {
+                            "_generator": {
+                              "name": "bicep",
+                              "version": "0.4.1318.3566",
+                              "templateHash": "8556645354750312141"
+                            }
+                          },
+                          "parameters": {
+                            "permissions": {
+                              "type": "array",
+                              "metadata": {
+                                "description": "Required. Array of Role Assignments to deploy"
+                              }
+                            }
+                          },
+                          "resources": [
+                            {
+                              "copy": {
+                                "name": "roleAssignments",
+                                "count": "[length(parameters('permissions'))]"
+                              },
+                              "type": "Microsoft.Authorization/roleAssignments",
+                              "apiVersion": "2022-01-01-preview",
+                              "name": "[guid(resourceGroup().id, parameters('permissions')[copyIndex()].name, parameters('permissions')[copyIndex()].roleDefinitionId)]",
+                              "properties": {
+                                "principalId": "[parameters('permissions')[copyIndex()].principalId]",
+                                "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', parameters('permissions')[copyIndex()].roleDefinitionId)]",
+                                "condition": "[if(and(contains(parameters('permissions')[copyIndex()], 'condition'), not(equals(parameters('permissions')[copyIndex()].condition, ''))), parameters('permissions')[copyIndex()].condition, null())]",
+                                "conditionVersion": "[if(and(contains(parameters('permissions')[copyIndex()], 'conditionVersion'), not(equals(parameters('permissions')[copyIndex()].conditionVersion, ''))), parameters('permissions')[copyIndex()].conditionVersion, null())]",
+                                "delegatedManagedIdentityResourceId": "[if(and(contains(parameters('permissions')[copyIndex()], 'delegatedManagedIdentityResourceId'), not(equals(parameters('permissions')[copyIndex()].delegatedManagedIdentityResourceId, ''))), parameters('permissions')[copyIndex()].delegatedManagedIdentityResourceId, null())]",
+                                "description": "[parameters('permissions')[copyIndex()].description]",
+                                "principalType": "[parameters('permissions')[copyIndex()].principalType]"
+                              }
+                            }
+                          ],
+                          "outputs": {
+                            "resourceName": {
+                              "type": "string",
+                              "value": "[guid(resourceGroup().id, parameters('permissions')[0].name, parameters('permissions')[0].roleDefinitionId)]",
+                              "metadata": {
+                                "description": "The name of the Azure resource"
+                              }
+                            },
+                            "resourceID": {
+                              "type": "string",
+                              "value": "[resourceId('Microsoft.Authorization/roleAssignments', guid(resourceGroup().id, parameters('permissions')[0].name, parameters('permissions')[0].roleDefinitionId))]",
+                              "metadata": {
+                                "description": "The resource ID of the Azure resource"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.ContainerService/managedClusters', variables('nameVar'))]"
+                      ]
+                    },
+                    {
+                      "type": "Microsoft.Resources/deployments",
+                      "apiVersion": "2020-10-01",
+                      "name": "[format('{0}-mio-rbac', variables('agentPoolIdentity'))]",
+                      "resourceGroup": "[parameters('nodeResourceGroup')]",
+                      "properties": {
+                        "expressionEvaluationOptions": {
+                          "scope": "inner"
+                        },
+                        "mode": "Incremental",
+                        "parameters": {
+                          "permissions": {
+                            "value": [
+                              {
+                                "name": "[variables('agentPoolIdentity')]",
+                                "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('nameVar'))).identityProfile.kubeletidentity.objectId]",
+                                "principalType": "ServicePrincipal",
+                                "roleDefinitionId": "f1a07417-d97a-45cb-824c-7a7467783830",
+                                "description": "Needed for AKS Cluster"
+                              }
+                            ]
+                          }
+                        },
+                        "template": {
+                          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                          "contentVersion": "1.0.0.0",
+                          "metadata": {
+                            "_generator": {
+                              "name": "bicep",
+                              "version": "0.4.1318.3566",
+                              "templateHash": "8556645354750312141"
+                            }
+                          },
+                          "parameters": {
+                            "permissions": {
+                              "type": "array",
+                              "metadata": {
+                                "description": "Required. Array of Role Assignments to deploy"
+                              }
+                            }
+                          },
+                          "resources": [
+                            {
+                              "copy": {
+                                "name": "roleAssignments",
+                                "count": "[length(parameters('permissions'))]"
+                              },
+                              "type": "Microsoft.Authorization/roleAssignments",
+                              "apiVersion": "2022-01-01-preview",
+                              "name": "[guid(resourceGroup().id, parameters('permissions')[copyIndex()].name, parameters('permissions')[copyIndex()].roleDefinitionId)]",
+                              "properties": {
+                                "principalId": "[parameters('permissions')[copyIndex()].principalId]",
+                                "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', parameters('permissions')[copyIndex()].roleDefinitionId)]",
+                                "condition": "[if(and(contains(parameters('permissions')[copyIndex()], 'condition'), not(equals(parameters('permissions')[copyIndex()].condition, ''))), parameters('permissions')[copyIndex()].condition, null())]",
+                                "conditionVersion": "[if(and(contains(parameters('permissions')[copyIndex()], 'conditionVersion'), not(equals(parameters('permissions')[copyIndex()].conditionVersion, ''))), parameters('permissions')[copyIndex()].conditionVersion, null())]",
+                                "delegatedManagedIdentityResourceId": "[if(and(contains(parameters('permissions')[copyIndex()], 'delegatedManagedIdentityResourceId'), not(equals(parameters('permissions')[copyIndex()].delegatedManagedIdentityResourceId, ''))), parameters('permissions')[copyIndex()].delegatedManagedIdentityResourceId, null())]",
+                                "description": "[parameters('permissions')[copyIndex()].description]",
+                                "principalType": "[parameters('permissions')[copyIndex()].principalType]"
+                              }
+                            }
+                          ],
+                          "outputs": {
+                            "resourceName": {
+                              "type": "string",
+                              "value": "[guid(resourceGroup().id, parameters('permissions')[0].name, parameters('permissions')[0].roleDefinitionId)]",
+                              "metadata": {
+                                "description": "The name of the Azure resource"
+                              }
+                            },
+                            "resourceID": {
+                              "type": "string",
+                              "value": "[resourceId('Microsoft.Authorization/roleAssignments', guid(resourceGroup().id, parameters('permissions')[0].name, parameters('permissions')[0].roleDefinitionId))]",
+                              "metadata": {
+                                "description": "The resource ID of the Azure resource"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.ContainerService/managedClusters', variables('nameVar'))]"
+                      ]
+                    }
+                  ],
+                  "outputs": {
+                    "resourceName": {
+                      "type": "string",
+                      "value": "[variables('nameVar')]",
+                      "metadata": {
+                        "description": "Name of the resource"
+                      }
+                    },
+                    "resourceID": {
+                      "type": "string",
+                      "value": "[resourceId('Microsoft.ContainerService/managedClusters', variables('nameVar'))]",
+                      "metadata": {
+                        "description": "ID of the resource"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "resourceName": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', format('AzureKubernetesService-{0}', parameters('time'))), '2020-10-01').outputs.resourceName.value]",
+              "metadata": {
+                "description": "Name of the resource"
+              }
+            },
+            "resourceID": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', format('AzureKubernetesService-{0}', parameters('time'))), '2020-10-01').outputs.resourceID.value]",
+              "metadata": {
+                "description": "ID of the resource"
+              }
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'Deploy-acr-aks')]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'rg-infr-aks-p-weu-00'), 'Microsoft.Resources/deployments', 'Deploy-vnet-law')]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'rg-infr-aks-p-weu-00'), 'Microsoft.Resources/deployments', 'Deploy-vnet-aks')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "deploy-pip",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "pipName": {
+            "value": "pip-infr-1pw-scim-p-weu-00"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.15.31.15270",
+              "templateHash": "1821291091911097282"
+            }
+          },
+          "parameters": {
+            "pipName": {
+              "type": "string"
+            },
+            "additionTags": {
+              "type": "object",
+              "defaultValue": {}
+            },
+            "location": {
+              "type": "string"
+            }
+          },
+          "variables": {
+            "$fxv#0": {
+              "commonTags": {
+                "InSpark_EnvironmentType": "PROD",
+                "InSpark_BusinessApplication": "AKS",
+                "InSpark_InfrastructureManagedBy": "InSpark",
+                "InSpark_ApplicationManagedBy": "InSpark",
+                "InSpark_PipelineManagedBy": "InSpark"
+              }
+            },
+            "commonTags": "[variables('$fxv#0')]",
+            "tags": "[union(variables('commonTags').commonTags, parameters('additionTags'))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2020-10-01",
+              "name": "pip",
+              "properties": {
+                "expressionEvaluationOptions": {
+                  "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                  "applicationName": {
+                    "value": ""
+                  },
+                  "environmentName": {
+                    "value": ""
+                  },
+                  "index": {
+                    "value": 0
+                  },
+                  "regionName": {
+                    "value": ""
+                  },
+                  "workloadName": {
+                    "value": ""
+                  },
+                  "customName": {
+                    "value": "[parameters('pipName')]"
+                  },
+                  "location": {
+                    "value": "[parameters('location')]"
+                  },
+                  "publicIPAddressVersion": {
+                    "value": "IPv4"
+                  },
+                  "tags": {
+                    "value": "[variables('tags')]"
+                  },
+                  "publicIPAllocationMethod": {
+                    "value": "Static"
+                  },
+                  "publicIPSku": {
+                    "value": "Standard"
+                  }
+                },
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "metadata": {
+                    "_generator": {
+                      "name": "bicep",
+                      "version": "0.8.2.30886",
+                      "templateHash": "13386833169397021553"
+                    }
+                  },
+                  "parameters": {
+                    "applicationName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Required. The name of the application"
+                      }
+                    },
+                    "workloadName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Required. The code of the application this resource will be used for"
+                      }
+                    },
+                    "regionName": {
+                      "type": "string",
+                      "maxLength": 4,
+                      "metadata": {
+                        "description": "Required. The region this resource will be deployed in"
+                      }
+                    },
+                    "index": {
+                      "type": "int",
+                      "metadata": {
+                        "description": "Required. Index of the resource"
+                      }
+                    },
+                    "environmentName": {
+                      "type": "string",
+                      "maxLength": 1,
+                      "metadata": {
+                        "description": "Required. The code of the environment this resource will be used in"
+                      }
+                    },
+                    "customName": {
+                      "type": "string",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "Optional. The name to use if not using the normal naming convention"
+                      }
+                    },
+                    "tags": {
+                      "type": "object",
+                      "defaultValue": {},
+                      "metadata": {
+                        "description": "Optional. Resource tags"
+                      }
+                    },
+                    "publicIPSku": {
+                      "type": "string",
+                      "defaultValue": "Standard",
+                      "allowedValues": [
+                        "Standard",
+                        "Basic"
+                      ],
+                      "metadata": {
+                        "description": "Optional. Name of a public IP address SKU"
+                      }
+                    },
+                    "publicIPAllocationMethod": {
+                      "type": "string",
+                      "defaultValue": "Static",
+                      "allowedValues": [
+                        "Static",
+                        "Dynamic"
+                      ],
+                      "metadata": {
+                        "description": "Optional. IP address allocation method"
+                      }
+                    },
+                    "publicIPDomainNameLabel": {
+                      "type": "string",
+                      "defaultValue": "",
+                      "metadata": {
+                        "description": "Optional. The domain name label. The concatenation of the domain name label and the regionalized DNS zone make up the fully qualified domain name associated with the public IP address. If a domain name label is specified, an A DNS record is created for the public IP in the Microsoft Azure DNS system"
+                      }
+                    },
+                    "publicIPIdleTimeoutInMinutes": {
+                      "type": "int",
+                      "defaultValue": 10,
+                      "metadata": {
+                        "description": "Optional. The idle timeout of the public IP address"
+                      }
+                    },
+                    "publicIPAddressVersion": {
+                      "type": "string",
+                      "defaultValue": "IPv4",
+                      "allowedValues": [
+                        "IPv4",
+                        "IPv6"
+                      ],
+                      "metadata": {
+                        "description": "Optional. \tIP address version"
+                      }
+                    },
+                    "location": {
+                      "type": "string",
+                      "defaultValue": "[resourceGroup().location]",
+                      "metadata": {
+                        "description": "Optional. Location of the resource"
+                      }
+                    },
+                    "permissions": {
+                      "type": "array",
+                      "defaultValue": [],
+                      "metadata": {
+                        "description": "Optional. Array of Role Assignments to deploy"
+                      }
+                    },
+                    "zones": {
+                      "type": "array",
+                      "defaultValue": [
+                        "1",
+                        "2",
+                        "3"
+                      ],
+                      "metadata": {
+                        "description": "Optional. A list of availability zones denoting the IP allocated for the resource needs to come from"
+                      }
+                    },
+                    "diagnosticSettings": {
+                      "type": "array",
+                      "defaultValue": [],
+                      "metadata": {
+                        "description": "Optional. Diagnostic settings configuration"
+                      }
+                    }
+                  },
+                  "variables": {
+                    "nameVar": "[if(empty(parameters('customName')), toLower(format('pip-{0}-{1}-{2}-{3}-{4}', parameters('workloadName'), parameters('applicationName'), parameters('environmentName'), parameters('regionName'), padLeft(parameters('index'), 2, '0'))), parameters('customName'))]"
+                  },
+                  "resources": [
+                    {
+                      "type": "Microsoft.Network/publicIPAddresses",
+                      "apiVersion": "2021-12-01",
+                      "name": "[variables('nameVar')]",
+                      "location": "[parameters('location')]",
+                      "tags": "[parameters('tags')]",
+                      "zones": "[parameters('zones')]",
+                      "sku": {
+                        "name": "[parameters('publicIPSku')]"
+                      },
+                      "properties": {
+                        "publicIPAllocationMethod": "[if(equals(parameters('publicIPSku'), 'Standard'), 'Static', parameters('publicIPAllocationMethod'))]",
+                        "publicIPAddressVersion": "[if(equals(parameters('publicIPSku'), 'Standard'), 'IPv4', parameters('publicIPAddressVersion'))]",
+                        "dnsSettings": "[if(empty(parameters('publicIPDomainNameLabel')), null(), createObject('domainNameLabel', toLower(format('{0}-{1}', parameters('publicIPDomainNameLabel'), uniqueString(resourceGroup().id)))))]",
+                        "idleTimeoutInMinutes": "[parameters('publicIPIdleTimeoutInMinutes')]"
+                      }
+                    },
+                    {
+                      "condition": "[not(empty(parameters('diagnosticSettings')))]",
+                      "copy": {
+                        "name": "diagSettings",
+                        "count": "[length(parameters('diagnosticSettings'))]"
+                      },
+                      "type": "Microsoft.Insights/diagnosticSettings",
+                      "apiVersion": "2021-05-01-preview",
+                      "scope": "[format('Microsoft.Network/publicIPAddresses/{0}', variables('nameVar'))]",
+                      "name": "[parameters('diagnosticSettings')[copyIndex()].name]",
+                      "properties": {
+                        "workspaceId": "[if(contains(parameters('diagnosticSettings')[copyIndex()], 'workspaceId'), parameters('diagnosticSettings')[copyIndex()].workspaceId, null())]",
+                        "storageAccountId": "[if(contains(parameters('diagnosticSettings')[copyIndex()], 'diagnosticsStorageAccountId'), parameters('diagnosticSettings')[copyIndex()].diagnosticsStorageAccountId, null())]",
+                        "logs": "[if(contains(parameters('diagnosticSettings')[copyIndex()], 'logs'), parameters('diagnosticSettings')[copyIndex()].logs, null())]",
+                        "metrics": "[if(contains(parameters('diagnosticSettings')[copyIndex()], 'metrics'), parameters('diagnosticSettings')[copyIndex()].metrics, null())]"
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.Network/publicIPAddresses', variables('nameVar'))]"
+                      ]
+                    },
+                    {
+                      "copy": {
+                        "name": "roleAssignments",
+                        "count": "[length(parameters('permissions'))]"
+                      },
+                      "type": "Microsoft.Authorization/roleAssignments",
+                      "apiVersion": "2022-01-01-preview",
+                      "scope": "[format('Microsoft.Network/publicIPAddresses/{0}', variables('nameVar'))]",
+                      "name": "[guid(resourceGroup().id, parameters('permissions')[copyIndex()].name, parameters('permissions')[copyIndex()].roleDefinitionId)]",
+                      "properties": {
+                        "principalId": "[parameters('permissions')[copyIndex()].principalId]",
+                        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', parameters('permissions')[copyIndex()].roleDefinitionId)]",
+                        "condition": "[if(and(contains(parameters('permissions')[copyIndex()], 'condition'), not(equals(parameters('permissions')[copyIndex()].condition, ''))), parameters('permissions')[copyIndex()].condition, null())]",
+                        "conditionVersion": "[if(and(contains(parameters('permissions')[copyIndex()], 'conditionVersion'), not(equals(parameters('permissions')[copyIndex()].conditionVersion, ''))), parameters('permissions')[copyIndex()].conditionVersion, null())]",
+                        "delegatedManagedIdentityResourceId": "[if(and(contains(parameters('permissions')[copyIndex()], 'delegatedManagedIdentityResourceId'), not(equals(parameters('permissions')[copyIndex()].delegatedManagedIdentityResourceId, ''))), parameters('permissions')[copyIndex()].delegatedManagedIdentityResourceId, null())]",
+                        "description": "[parameters('permissions')[copyIndex()].description]",
+                        "principalType": "[parameters('permissions')[copyIndex()].principalType]"
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.Network/publicIPAddresses', variables('nameVar'))]"
+                      ]
+                    }
+                  ],
+                  "outputs": {
+                    "resourceName": {
+                      "type": "string",
+                      "value": "[variables('nameVar')]",
+                      "metadata": {
+                        "description": "The name of the Azure resource"
+                      }
+                    },
+                    "resourceID": {
+                      "type": "string",
+                      "value": "[resourceId('Microsoft.Network/publicIPAddresses', variables('nameVar'))]",
+                      "metadata": {
+                        "description": "The resource-id of the Azure resource"
+                      }
+                    },
+                    "publicIPFqdn": {
+                      "type": "string",
+                      "value": "[if(empty(parameters('publicIPDomainNameLabel')), '', reference(resourceId('Microsoft.Network/publicIPAddresses', variables('nameVar'))).dnsSettings.fqdn)]",
+                      "metadata": {
+                        "description": "The FQDN of the Azure Public IP"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
